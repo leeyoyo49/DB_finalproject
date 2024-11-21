@@ -3,7 +3,7 @@ import duckdb
 import psycopg2
 
 # PostgreSQL connection setup
-DB_PASSWORD = 'your_password'  # Replace with your actual PostgreSQL password
+DB_PASSWORD = ''  # Replace with your actual PostgreSQL password
 DB_NAME = 'your_database'      # Replace with your actual database name
 DB_USER = 'postgres'           # PostgreSQL user
 DB_HOST = 'localhost'          # Host address
