@@ -253,17 +253,18 @@ def create_user(username, password, role):
     Creates a new user in the database.
 
     Args:
-        username (str): Username for the new user.
+        user_name (str): Username for the new user.
         password (str): Password for the new user.
         role (str): Role of the user (e.g., 'Admin', 'User', 'Analyst').
 
     Returns:
         str: Success or error message.
     """
+    
     try:
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
         sql_query = """
-            INSERT INTO users (username, password, role)
+            INSERT INTO user_ (user_name, password, role)
             VALUES (%s, %s, %s)
         """
         query(con, sql_query, (username, hashed_password, role))
