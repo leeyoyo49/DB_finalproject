@@ -11,14 +11,14 @@ def login_user(username, password):
     Authenticates a user by verifying the provided credentials.
 
     Args:
-        username (str): The username of the user attempting to log in.
+        user_name (str): The username of the user attempting to log in.
         password (str): The plaintext password of the user.
 
     Returns:
         dict or None: A dictionary containing the user's details ('user_id', 'username', 'role') if authentication is successful, otherwise None.
     """
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
-    sql_query = "SELECT id, username, password, role FROM users WHERE username = %s"
+    sql_query = "SELECT id, user_name, password, role FROM users_ WHERE username = %s"
     columns, results = query(con, sql_query, (username,))
     if not results:
         return None
@@ -65,12 +65,12 @@ def add_alumni(data):
     """
     try:
         sql_query = """
-            INSERT INTO alumni (first_name, last_name, address, phone, graduation_year, user_id)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO alumni (first_name, last_name, sex, address, graduation_year, user_id, phone)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
         query(con, sql_query, (
-            data['first_name'], data['last_name'], data['address'],
-            data['phone'], data['graduation_year'], data['user_id']
+            data['first_name'], data['last_name'], data['sex'], data['address'],
+            data['graduation_year'], data['user_id'], data['phone']
         ))
         return "Alumni added successfully."
     except Exception as e:
@@ -253,17 +253,18 @@ def create_user(username, password, role):
     Creates a new user in the database.
 
     Args:
-        username (str): Username for the new user.
+        user_name (str): Username for the new user.
         password (str): Password for the new user.
         role (str): Role of the user (e.g., 'Admin', 'User', 'Analyst').
 
     Returns:
         str: Success or error message.
     """
+    
     try:
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
         sql_query = """
-            INSERT INTO users (username, password, role)
+            INSERT INTO user_ (user_name, password, role)
             VALUES (%s, %s, %s)
         """
         query(con, sql_query, (username, hashed_password, role))
