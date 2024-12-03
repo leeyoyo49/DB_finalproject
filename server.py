@@ -9,13 +9,8 @@ app.secret_key = 'supersecretkey'  # Required for session management
 # Establish database connection
 con = connect_to_db()
 
-<<<<<<< HEAD
-# User management functions
-=======
-
 # User management endpoints
 
->>>>>>> 8dc66334658acfbe7fdf7cb958d84c1558343ea1
 @app.route('/login', methods=['POST'])
 def login():
     """
