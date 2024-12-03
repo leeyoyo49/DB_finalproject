@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, session
 from db_connection import connect_to_db, query
-from DB.DB_finalproject.HelpFunctions import *
+from HelpFunctions import *
 
 # Initialize Flask app
 app = Flask(__name__)

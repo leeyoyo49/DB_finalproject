@@ -1,6 +1,9 @@
 import hashlib
-from db_connection import con, query
+from db_connection import query, connect_to_db
 from flask import Flask, jsonify, request, session
+
+# Establish database connection
+con = connect_to_db()
 
 # Utility Functions
 def login_user(username, password):

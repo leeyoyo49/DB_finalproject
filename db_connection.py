@@ -7,8 +7,22 @@ DB_PASSWORD = ''  # Replace with your actual PostgreSQL password
 DB_NAME = 'final proposal'     # Replace with your actual database name
 DB_USER = 'postgres'           # PostgreSQL user
 DB_HOST = 'localhost'          # Host address
-TABLE_NAMES = ['users']        # List of table names to load
-
+TABLE_NAMES = [
+    "achieve",
+    "achievement",
+    "alumni",
+    "alumni_association",
+    "association_event",
+    "career_history",
+    "degree_",
+    "donation",
+    "earned_by",
+    "event_participated_by",
+    "held_by",
+    "is_cadre",
+    "is_member",
+    "user_"
+]
 # Connect to PostgreSQL and DuckDB
 def connect_to_db():
     """
