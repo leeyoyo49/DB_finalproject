@@ -9,7 +9,7 @@ DB_PASSWORD = '0418'  # Replace with your actual PostgreSQL password
 # DB_PASSWORD = ''  # Replace with your actual PostgreSQL password
 DB_NAME = 'final proposal'     # Replace with your actual database name
 DB_USER = 'postgres'           # PostgreSQL user
-DB_HOST = 'localhost'          # Host address
+DB_HOST = 'localhost:5433'          # Host address
 TABLE_NAMES = [
     "achieve",
     "achievement",

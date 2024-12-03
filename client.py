@@ -16,9 +16,10 @@ ALUMNI_ID = None
 def display_main_menu():
     """Display the main menu."""
     print("\n=== University Alumni Tracking System ===")
-    print("1. Register")
-    print("2. Login")
-    print("3. Exit")
+    print("1. Login as Alumni")
+    print("2. Login as Admin")
+    print("3. Login as Analyst")
+    print("4. Exit")
     print("=========================================")
     
 def register():
@@ -37,7 +38,7 @@ def login():
     print("\n=== Login ===")
     username = input("Enter username: ")
     password = input("Enter password: ")
-    data = {"user_name": username, "password": password}
+    data = {"username": username, "password": password}
     response = requests.post(f"{BASE_URL}/login", json=data)
     if response.status_code == 200:
         print(response.json()["message"])
