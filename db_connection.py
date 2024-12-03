@@ -4,7 +4,7 @@ import psycopg2
 
 # PostgreSQL connection setup
 DB_PASSWORD = ''  # Replace with your actual PostgreSQL password
-DB_NAME = 'your_database'      # Replace with your actual database name
+DB_NAME = 'final proposal'     # Replace with your actual database name
 DB_USER = 'postgres'           # PostgreSQL user
 DB_HOST = 'localhost'          # Host address
 TABLE_NAMES = ['users']        # List of table names to load

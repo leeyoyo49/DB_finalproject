@@ -3,8 +3,17 @@ from db_connection import con, query
 from flask import Flask, jsonify, request, session
 
 # Utility Functions
-
 def login_user(username, password):
+    """
+    Authenticates a user by verifying the provided credentials.
+
+    Args:
+        username (str): The username of the user attempting to log in.
+        password (str): The plaintext password of the user.
+
+    Returns:
+        dict or None: A dictionary containing the user's details ('user_id', 'username', 'role') if authentication is successful, otherwise None.
+    """
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
     sql_query = "SELECT id, username, password, role FROM users WHERE username = %s"
     columns, results = query(con, sql_query, (username,))
@@ -17,6 +26,17 @@ def login_user(username, password):
     return None
 
 def check_permissions(required_role):
+    """
+    Checks if the current session user has the required role to access an endpoint.
+
+    Args:
+        required_role (str): The role required to access the endpoint (e.g., "Admin", "User").
+
+    Returns:
+        tuple: A tuple containing:
+            - (bool): Whether the user has the required permissions.
+            - (str): A message indicating the status ("Unauthorized", "Permission denied", or an empty string if successful).
+    """
     if 'user_id' not in session:
         return False, "Unauthorized"
     user_role = session.get('role')
@@ -25,6 +45,7 @@ def check_permissions(required_role):
     if user_role != required_role:
         return False, "Permission denied"
     return True, ""
+
 
 
 # Alumni management functions
