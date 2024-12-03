@@ -45,7 +45,7 @@ def login():
         session['user_id'] = user['user_id']
         session['username'] = user['username']
         session['role'] = user['role']
-        return jsonify({"status": "success","user_id": session['user_id'], "username": session['username'], "role": session['role']}), 200
+        return jsonify({"status": "success","user_id": session['user_id'], "username": session['username'], "role": session['role'], "message": "Login Success"}), 200
     return jsonify({"status": "error","user_id":"", "username": "", "role": "", "message": "error"}), 401
 
 

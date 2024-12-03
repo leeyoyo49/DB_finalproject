@@ -5,29 +5,30 @@ from flask import Flask, jsonify, request, session
 # Establish database connection
 con = connect_to_db()
 
-# Utility Functions
 def login_user(username, password):
     """
     Authenticates a user by verifying the provided credentials.
 
     Args:
-        user_name (str): The username of the user attempting to log in.
+        username (str): The username of the user attempting to log in.
         password (str): The plaintext password of the user.
 
     Returns:
         dict or None: A dictionary containing the user's details ('user_id', 'username', 'role') if authentication is successful, otherwise None.
     """
-    hashed_password = hashlib.sha256(password.encode()).hexdigest()
-    sql_query = "SELECT user_id, user_name, password, role FROM users_ WHERE username = %s"
+    sql_query = "SELECT user_id, user_name, password, role FROM user_ WHERE user_name = ?"
     columns, results = query(con, sql_query, (username,))
     if not results:
         return None
+    print(results)
     user = results[0]
     user_id, db_username, db_password, role = user
     print(user_id, db_username, db_password, role)
-    if db_password == hashed_password:
+    if db_password == password:
         return {"user_id": user_id, "username": db_username, "role": role}
     return None
+
+
 
 def check_permissions(required_role):
     """
