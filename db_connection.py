@@ -3,7 +3,7 @@ import duckdb
 import psycopg2
 
 # PostgreSQL connection setup
-DB_PASSWORD = ''  # Replace with your actual PostgreSQL password
+DB_PASSWORD = '0418'  # Replace with your actual PostgreSQL password
 DB_NAME = 'final proposal'     # Replace with your actual database name
 DB_USER = 'postgres'           # PostgreSQL user
 DB_HOST = 'localhost'          # Host address
@@ -33,7 +33,7 @@ def connect_to_db():
     """
     # Connect to PostgreSQL
     psql_conn = psycopg2.connect(
-        f"dbname='{DB_NAME}' user='{DB_USER}' host='{DB_HOST}' password='{DB_PASSWORD}'"
+        f"dbname='{DB_NAME}' user='{DB_USER}' host='{DB_HOST}' password='{DB_PASSWORD}' port = '5433'"
     )
 
     # DuckDB connection

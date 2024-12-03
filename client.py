@@ -8,10 +8,10 @@ import sys
 BASE_URL = "http://localhost:5000"
 
 #global variable to store the user's role
-role = None
-user_id = None
-user_name = None
-alumni_id = None
+ROLE = None
+USER_ID = None
+USER_NAME = None
+ALUMNI_ID = None
 
 def display_main_menu():
     """Display the main menu."""
@@ -26,9 +26,9 @@ def register():
     print("\n=== Register ===")
     username = input("Enter username: ")
     password = input("Enter password: ")
-    role = input("Enter role (User/Admin/Analyst): ")
+    role = input("Enter role (Alumni/Admin/Analyst): ")
     data = {"username": username, "password": password, "role": role}
-    response = requests.post(f"{BASE_URL}/register", json=data)
+    response = requests.post(f"{BASE_URL}/create_user", json=data)
     print(response.json()["message"])
     
 def login():
@@ -40,7 +40,7 @@ def login():
     response = requests.post(f"{BASE_URL}/login", json=data)
     if response.status_code == 200:
         print(response.json()["message"])
-        return response.json().get("role")
+        return response.json().get("role"), response.json().get("user_id"), response.json().get("username")
     else:
         print(f"Login failed: {response.json().get('message')}")
         return None
@@ -58,6 +58,7 @@ def alumni_operations():
         end_date = input("Enter end date (YYYY-MM-YY): ")
         monthy_salary = input("Enter monthly salary (NTD, please enter a number): ")
         Job_Description = input("Enter job description: ")
+         
         
     
 def admin_operations():
@@ -75,8 +76,11 @@ def main():
         if choice == "1":
             register()
         elif choice == "2":
-            role = login()
-            if role == "User":
+            role, user_id, user_name = login()
+            ROLE = role
+            USER_ID = user_id
+            USER_NAME = user_name
+            if role == "Alumni":
                 alumni_operations()
             elif role == "Admin":
                 admin_operations()
@@ -85,3 +89,6 @@ def main():
         elif choice == "3":
             print("Exiting...")
             sys.exit()
+            
+if __name__ == "__main__":
+    main()
