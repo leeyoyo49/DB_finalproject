@@ -43,23 +43,24 @@ def login():
         return response.json().get("role"), response.json().get("user_id"), response.json().get("username")
     else:
         print(f"Login failed: {response.json().get('message')}")
-        return None
+        return -1, -1, -1
     
 def alumni_operations():
     """Alumni-specific operations."""
-    # Let the user choose an operation
-    action = input()
+    print("\n=== Select the section you want to enter ===")
+    print("1. Profile")
+    print("2. Career")
+    print("3. Achievements")
+    print("4. Donation")
+    print("5. Alumni Association")
+    print("6. Exit")
+    print("============================================")
+    choice = input("Enter your choice: ")
     
-    if input == 'add_career':
-        print("Enter the following information to add a career:")
-        job_title = input("Enter job title: ")
-        company = input("Enter company: ")
-        start_date = input("Enter start date (YYYY-MM-YY): ")
-        end_date = input("Enter end date (YYYY-MM-YY): ")
-        monthy_salary = input("Enter monthly salary (NTD, please enter a number): ")
-        Job_Description = input("Enter job description: ")
-         
-        
+    if choice == "1":
+        response = requests.get(f"{BASE_URL}//get_user_details/{USER_ID}")
+        print(response.json())
+    # Let the user choose an operation  
     
 def admin_operations():
     """Admin-specific operations."""
@@ -72,23 +73,52 @@ def analyst_operations():
 def main():
     while True:
         display_main_menu()
-        choice = input("Type 1 for register, 2 for login, or 3 for exit: ")
+        choice = input("Type 1 if you are an alumni, 2 if you are an admin, 3 if you are an analyst, 4 for exit: ")
         if choice == "1":
-            register()
+            role, user_id, user_name = login()
+            if role == -1:
+                print("Invalid credentials. Please try again.")
+                continue
+            else:
+                if role == "Alumni":
+                    print("Login successful.")
+                    ROLE = role
+                    USER_ID = user_id
+                    USER_NAME = user_name
+                    alumni_operations()
+                else:
+                    print("Invalid role. Please try again.")
+                    continue
         elif choice == "2":
             role, user_id, user_name = login()
-            ROLE = role
-            USER_ID = user_id
-            USER_NAME = user_name
-            if role == "Alumni":
-                alumni_operations()
-            elif role == "Admin":
-                admin_operations()
-            elif role == "Analyst":
-                analyst_operations()
+            if role == -1:
+                print("Invalid credentials. Please try again.")
+                continue
+            else:
+                if role == "Admin":
+                    print("Login successful.")
+                    ROLE = role
+                    USER_ID = user_id
+                    USER_NAME = user_name
+                    admin_operations()
+                else:
+                    print("Invalid role. Please try again.")
+                    continue
         elif choice == "3":
-            print("Exiting...")
-            sys.exit()
-            
+            role, user_id, user_name = login()
+            if role == -1:
+                print("Invalid credentials. Please try again.")
+                continue
+            else:
+                if role == "Analyst":
+                    print("Login successful.")
+                    ROLE = role
+                    USER_ID = user_id
+                    USER_NAME = user_name
+                    analyst_operations()
+                else:
+                    print("Invalid role. Please try again.")
+                    continue
+        
 if __name__ == "__main__":
     main()
