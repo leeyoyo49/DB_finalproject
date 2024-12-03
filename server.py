@@ -9,8 +9,8 @@ app.secret_key = 'supersecretkey'  # Required for session management
 # Establish database connection
 con = connect_to_db()
 
-# User management endpoints
 
+# User management endpoints
 @app.route('/login', methods=['POST'])
 def login():
     """
@@ -22,8 +22,13 @@ def login():
             "password": "admin"
         }
 
-    Returns:
-        JSON with login success or failure.
+    Return JSON:
+        {
+            "status": "success",
+            "user_id": 1,
+            "username": "b11705022",
+            "role": "Admin"
+        }
     """
     data = request.json
     if not data or "username" not in data or "password" not in data:
@@ -37,8 +42,8 @@ def login():
         session['user_id'] = user['user_id']
         session['username'] = user['username']
         session['role'] = user['role']
-        return jsonify({"status": "success", "message": "Login successful"}), 200
-    return jsonify({"status": "error", "message": "Invalid username or password"}), 401
+        return jsonify({"status": "success","user_id": session['user_id'], "username": session['username'], "role": session['role']}), 200
+    return jsonify({"status": "error","user_id":"", "username": "", "role": ""}), 401
 
 
 @app.route('/logout', methods=['POST'])
