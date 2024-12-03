@@ -252,17 +252,18 @@ def add_alumni_endpoint():
         {
             "first_name": "John",
             "last_name": "Doe",
+            "sex": "M",
             "address": "123 Main St, City, Country",
-            "phone": "1234567890",
-            "graduation_year": 2020,
+            "graduation_year": 2020,   
             "user_id": 1
+            "phone": "1234567890",
         }
 
     Returns:
         JSON with status and message.
     """
     data = request.json
-    if not data or not all(k in data for k in ['first_name', 'last_name', 'address', 'phone', 'graduation_year', 'user_id']):
+    if not data or not all(k in data for k in ['first_name', 'last_name', 'sex', 'address', 'graduation_year', 'user_id', 'phone']):
         return jsonify({"status": "error", "message": "Missing required fields"}), 400
 
     message = add_alumni(data)
