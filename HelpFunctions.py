@@ -24,6 +24,7 @@ def login_user(username, password):
         return None
     user = results[0]
     user_id, db_username, db_password, role = user
+    print(user_id, db_username, db_password, role)
     if db_password == hashed_password:
         return {"user_id": user_id, "username": db_username, "role": role}
     return None

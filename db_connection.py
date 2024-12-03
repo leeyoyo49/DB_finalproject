@@ -5,11 +5,11 @@ from sqlalchemy import create_engine
 
 
 # PostgreSQL connection setup
-DB_PASSWORD = '0418'  # Replace with your actual PostgreSQL password
-# DB_PASSWORD = ''  # Replace with your actual PostgreSQL password
+# DB_PASSWORD = '0418'  # Replace with your actual PostgreSQL password
+DB_PASSWORD = ''  # Replace with your actual PostgreSQL password
 DB_NAME = 'final proposal'     # Replace with your actual database name
 DB_USER = 'postgres'           # PostgreSQL user
-DB_HOST = 'localhost:5433'          # Host address
+DB_HOST = 'localhost'          # Host address
 TABLE_NAMES = [
     "achieve",
     "achievement",
@@ -55,18 +55,26 @@ def connect_to_db():
 
     return con
 
-# Function to execute SQL queries via DuckDB
-def query(con, sql_query):
+def query(con, sql_query, params=None):
     """
-    Execute a SQL query on the registered tables.
+    Execute a SQL query on the database with optional parameters.
 
     Args:
         con (duckdb.Connection): The DuckDB connection.
         sql_query (str): SQL query string.
+        params (tuple): Optional tuple containing query parameters.
 
     Returns:
         tuple: Column names and query results.
     """
-    result = con.execute(sql_query).fetchall()
-    column_names = [desc[0] for desc in con.description]
-    return column_names, result
+    try:
+        if params:
+            cursor = con.execute(sql_query, params)
+        else:
+            cursor = con.execute(sql_query)
+        result = cursor.fetchall()
+        column_names = [desc[0] for desc in cursor.description]
+        return column_names, result
+    except Exception as e:
+        print(f"Error executing query: {str(e)}")
+        return None, None
