@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request, session
 from db_connection import connect_to_db, query
 from HelpFunctions import *
+from sqlalchemy import create_engine
+
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -72,6 +74,11 @@ def dashboard():
     }), 200
 
 
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
 @app.route('/create_user', methods=['POST'])
 def create_user_endpoint():
     """
@@ -79,7 +86,7 @@ def create_user_endpoint():
 
     Input JSON:
         {
-            "username": "new_user",
+            "user_name": "new_user",
             "password": "password123",
             "role": "User"
         }
@@ -90,20 +97,29 @@ def create_user_endpoint():
     # Role check: only Admin can create new users
     has_permission, message = check_permissions("Admin")
     if not has_permission:
+        logging.warning("Permission denied: Attempt to create user without Admin privileges.")
         return jsonify({"status": "error", "message": message}), 403
 
     data = request.json
-    if not data or "username" not in data or "password" not in data or "role" not in data:
+    if not data or "user_name" not in data or "password" not in data or "role" not in data:
+        logging.warning("Failed user creation attempt due to missing required fields.")
         return jsonify({"status": "error", "message": "Missing required fields"}), 400
 
-    username = data['username']
+    username = data['user_name']
     password = data['password']
     role = data['role']
 
-    message = create_user(username, password, role)
-    if "Error" in message:
-        return jsonify({"status": "error", "message": message}), 500
-    return jsonify({"status": "success", "message": message}), 201
+    logging.info(f"Attempting to create user: username={username}, role={role}")
+
+    # Call the create_user function
+    result_message = create_user(username, password, role)
+    if "Error" in result_message:
+        logging.error(f"Failed to create user: username={username}, reason={result_message}")
+        return jsonify({"status": "error", "message": result_message}), 500
+
+    logging.info(f"User created successfully: username={username}, role={role}")
+    return jsonify({"status": "success", "message": result_message}), 201
+
 
 
 @app.route('/delete_user/<int:user_id>', methods=['DELETE'])

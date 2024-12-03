@@ -1,9 +1,12 @@
 import pandas as pd
 import duckdb
 import psycopg2
+from sqlalchemy import create_engine
+
 
 # PostgreSQL connection setup
 DB_PASSWORD = '0418'  # Replace with your actual PostgreSQL password
+# DB_PASSWORD = ''  # Replace with your actual PostgreSQL password
 DB_NAME = 'final proposal'     # Replace with your actual database name
 DB_USER = 'postgres'           # PostgreSQL user
 DB_HOST = 'localhost'          # Host address
@@ -23,17 +26,18 @@ TABLE_NAMES = [
     "is_member",
     "user_"
 ]
-# Connect to PostgreSQL and DuckDB
+
+
 def connect_to_db():
     """
-    Establishes a connection to PostgreSQL and DuckDB.
+    Establishes a connection to PostgreSQL using SQLAlchemy and DuckDB.
 
     Returns:
         duckdb.Connection: A DuckDB connection with registered tables.
     """
-    # Connect to PostgreSQL
-    psql_conn = psycopg2.connect(
-        f"dbname='{DB_NAME}' user='{DB_USER}' host='{DB_HOST}' password='{DB_PASSWORD}' port = '5433'"
+    # Create SQLAlchemy engine for PostgreSQL
+    engine = create_engine(
+        f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
     )
 
     # DuckDB connection
@@ -42,11 +46,12 @@ def connect_to_db():
     # Load PostgreSQL tables into DuckDB
     for table_name in TABLE_NAMES:
         query_str = f"SELECT * FROM {table_name}"
-        df = pd.read_sql_query(query_str, psql_conn)  # Load data into DataFrame
+        # Use the SQLAlchemy engine instead of psycopg2 connection
+        df = pd.read_sql_query(query_str, engine)
         con.register(table_name, df)  # Register the DataFrame in DuckDB
 
-    # Close PostgreSQL connection
-    psql_conn.close()
+    # SQLAlchemy handles connection closing automatically, but you can explicitly dispose of it
+    engine.dispose()
 
     return con
 
