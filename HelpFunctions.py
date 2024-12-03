@@ -462,7 +462,7 @@ def get_salary_trends(department, year_range):
         sql_query = """
             SELECT ch.start_date, ch.monthly_salary, d.department
             FROM career_history ch
-            JOIN degree d ON ch.alumni_id = d.alumni_id
+            JOIN degree_ d ON ch.alumni_id = d.alumni_id
             WHERE d.department = %s AND EXTRACT(YEAR FROM ch.start_date) BETWEEN %s AND %s
         """
         columns, results = query(con, sql_query, (department, start_year, end_year))

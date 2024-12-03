@@ -5,7 +5,7 @@
 import requests
 import sys
 
-BASE_URL = "http://localhost:5000"
+BASE_URL = "http://localhost:5001"
 
 #global variable to store the user's role
 ROLE = None
@@ -27,16 +27,17 @@ def register():
     username = input("Enter username: ")
     password = input("Enter password: ")
     role = input("Enter role (Alumni/Admin/Analyst): ")
-    data = {"username": username, "password": password, "role": role}
+    data = {"user_name": username, "password": password, "role": role}
     response = requests.post(f"{BASE_URL}/create_user", json=data)
-    print(response.json()["message"])
+    print(response.json())
+    print()
     
 def login():
     """Login to the system."""
     print("\n=== Login ===")
     username = input("Enter username: ")
     password = input("Enter password: ")
-    data = {"username": username, "password": password}
+    data = {"user_name": username, "password": password}
     response = requests.post(f"{BASE_URL}/login", json=data)
     if response.status_code == 200:
         print(response.json()["message"])
