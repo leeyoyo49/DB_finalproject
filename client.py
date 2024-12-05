@@ -75,7 +75,7 @@ def analyst_operations():
 def main():
     while True:
         display_main_menu()
-        choice = input("Type 1 if you are an alumni, 2 if you are an admin, 3 if you are an analyst, 4 for exit: ")
+        choice = input("Loggin as: ")
         if choice == "1":
             role, user_id, user_name = login()
             if role == -1:

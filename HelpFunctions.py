@@ -17,7 +17,7 @@ def login_user(username, password):
     Returns:
         dict or None: A dictionary containing the user's details ('user_id', 'username', 'role') if authentication is successful, otherwise None.
     """
-    hashed_password = hashlib.sha256(password.encode()).hexdigest()
+    #hashed_password = hashlib.sha256(password.encode()).hexdigest()
     sql_query = "SELECT user_id, user_name, password, role FROM users_ WHERE username = %s"
     columns, results = query(con, sql_query, (username,))
     if not results:
@@ -25,7 +25,7 @@ def login_user(username, password):
     user = results[0]
     user_id, db_username, db_password, role = user
     print(user_id, db_username, db_password, role)
-    if db_password == hashed_password:
+    if str(db_password) == str(password):
         return {"user_id": user_id, "username": db_username, "role": role}
     return None
 
