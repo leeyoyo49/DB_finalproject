@@ -16,12 +16,8 @@ def login_user(username, password):
     Returns:
         dict or None: A dictionary containing the user's details ('user_id', 'username', 'role') if authentication is successful, otherwise None.
     """
-<<<<<<< HEAD
     #hashed_password = hashlib.sha256(password.encode()).hexdigest()
     sql_query = "SELECT user_id, user_name, password, role FROM users_ WHERE username = %s"
-=======
-    sql_query = "SELECT user_id, user_name, password, role FROM user_ WHERE user_name = ?"
->>>>>>> 53110b06b86f88da1052abca13270542a06c6666
     columns, results = query(con, sql_query, (username,))
     if not results:
         return None
@@ -29,36 +25,9 @@ def login_user(username, password):
     user = results[0]
     user_id, db_username, db_password, role = user
     print(user_id, db_username, db_password, role)
-<<<<<<< HEAD
-    if str(db_password) == str(password):
-=======
     if db_password == password:
->>>>>>> 53110b06b86f88da1052abca13270542a06c6666
         return {"user_id": user_id, "username": db_username, "role": role}
     return None
-
-
-
-def check_permissions(required_role):
-    """
-    Checks if the current session user has the required role to access an endpoint.
-
-    Args:
-        required_role (str): The role required to access the endpoint (e.g., "Admin", "User").
-
-    Returns:
-        tuple: A tuple containing:
-            - (bool): Whether the user has the required permissions.
-            - (str): A message indicating the status ("Unauthorized", "Permission denied", or an empty string if successful).
-    """
-    if 'user_id' not in session:
-        return False, "Unauthorized"
-    user_role = session.get('role')
-    if required_role == "User":
-        return True, ""  # Allow all roles for this endpoint
-    if user_role != required_role:
-        return False, "Permission denied"
-    return True, ""
 
 
 

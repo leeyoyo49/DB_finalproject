@@ -1,18 +1,41 @@
-from flask import Flask, jsonify, request, session
-from db_connection import connect_to_db, query
+from flask import Flask, request, jsonify
+from db_connection import connect_to_db
 from HelpFunctions import *
-from sqlalchemy import create_engine
 
-
-# Initialize Flask app
+# 初始化 Flask 應用
 app = Flask(__name__)
-app.secret_key = 'supersecretkey'  # Required for session management
 
-# Establish database connection
+# 模擬的用戶登入狀態
+logged_in_users = {}
+
+# 建立資料庫連線
 con = connect_to_db()
 
 
-# User management endpoints
+def check_permissions(username, required_role):
+    """
+    Checks if the specified user has the required role to access an endpoint.
+
+    Args:
+        username (str): The username of the user attempting to access the endpoint.
+        required_role (str): The role required to access the endpoint (e.g., "Admin", "User").
+
+    Returns:
+        tuple: A tuple containing:
+            - (bool): Whether the user has the required permissions.
+            - (str): A message indicating the status ("Unauthorized", "Permission denied", or an empty string if successful).
+    """
+    if username not in logged_in_users:
+        return False, "Unauthorized"
+    user_role = logged_in_users[username].get("role")
+    if required_role == "User":
+        return True, ""  # Allow all roles for this endpoint
+    if user_role != required_role:
+        return False, "Permission denied"
+    return True, ""
+
+
+# === 用戶管理 ===
 @app.route('/login', methods=['POST'])
 def login():
     """
@@ -33,92 +56,147 @@ def login():
         }
     """
     data = request.json
-    if not data or "username" not in data or "password" not in data:
-        return jsonify({"status": "error", "message": "Missing username or password"}), 400
+    username = data.get("username")
+    password = data.get("password")
 
-    username = data['username']
-    password = data['password']
+    if not username or not password:
+        return jsonify({"status": "error", "message": "缺少用戶名或密碼"}), 400
+
     user = login_user(username, password)
-
-    print(user)
     if user:
-        session['user_id'] = user['user_id']
-        session['username'] = user['username']
-        session['role'] = user['role']
-        return jsonify({"status": "success","user_id": session['user_id'], "username": session['username'], "role": session['role'], "message": "Login Success"}), 200
-    return jsonify({"status": "error","user_id":"", "username": "", "role": "", "message": "error"}), 401
+        if username in logged_in_users:
+            return jsonify({"status": "error", "message": f"用戶 {username} 已經登入"}), 400
+        
+        logged_in_users[username] = {
+            "user_id": user["user_id"],
+            "role": user["role"]
+        }
+        return jsonify({
+            "status": "success",
+            "user_id": user["user_id"],
+            "username": username,
+            "role": user["role"],
+            "message": "登入成功"
+        }), 200
 
+    return jsonify({"status": "error", "message": "用戶名或密碼錯誤"}), 401
 
 @app.route('/logout', methods=['POST'])
 def logout():
     """
     Endpoint for user logout.
-    
-    Clears the session and logs the user out.
+
+    Input JSON:
+        {
+            "username": "b11705022",
+        }
+
+    Return JSON:
+        {
+            "status": "success",
+            "message": "登出成功"
+        }
+        or
+        {
+            "status": "error",
+            "message": "用戶名或密碼錯誤"
+        }
     """
-    session.clear()
-    return jsonify({"status": "success", "message": "Logout successful"}), 200
+    data = request.json
+    username = data.get("username")
+    if username not in logged_in_users:
+        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
+    
+    # Remove the user from logged_in_users
+    del logged_in_users[username]
+    return jsonify({"status": "success", "message": "登出成功"}), 200
+
 
 
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
     """
-    Example protected endpoint for logged-in users.
+    Endpoint for the dashboard.
+    Input JSON:
+        {
+            "username": "b11705022"
+        }
+    Return JSON:
+        {
+            "status": "success",
+            "message": "歡迎, b11705022!",
+            "role": "Admin"
+        }
     """
-    if 'user_id' not in session:
-        return jsonify({"status": "error", "message": "Unauthorized"}), 401
 
+    data = request.json
+    username = data.get("username")
+    if username not in logged_in_users:
+        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
+    
+    user = logged_in_users[username]
     return jsonify({
         "status": "success",
-        "message": f"Welcome, {session['username']}!",
-        "role": session['role']
+        "message": f"歡迎, {username}!",
+        "role": user["role"]
     }), 200
 
 
-import logging
+@app.route('/logged_in_users', methods=['GET'])
+def get_logged_in_users():
+    """
+    Endpoint for retrieving the list of logged in users.
+    Return JSON:
+        {
+            "status": "success",
+            "logged_in_users": ["b11705022", "b11705023"]
+        }
+    """
+    if logged_in_users:
+        return jsonify({"status": "success", "logged_in_users": logged_in_users}), 200
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+    return jsonify({"status": "success", "message": "目前無用戶登入"}), 200
+
+
 
 @app.route('/create_user', methods=['POST'])
 def create_user_endpoint():
     """
-    Endpoint for creating a new user.
-
+    創建用戶（僅限 Admin）
     Input JSON:
         {
-            "user_name": "new_user",
-            "password": "password123",
-            "role": "User"
+            "username": "b11705022",
+            "password": "admin",
+            "role": "Admin",
+            "current_user": "b11705023"
         }
-
-    Returns:
-        JSON with status and message.
+    Return JSON:
+        {
+            "status": "success",
+            "message": "用戶 b11705022 創建成功"
+        }
     """
-    # Role check: only Admin can create new users
-    has_permission, message = check_permissions("Admin")
+    data = request.json
+    username = data.get("username")
+    if username not in logged_in_users:
+        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
+    
+    username = data.get("username")
+    password = data.get("password")
+    role = data.get("role")
+    current_user = data.get("current_user")
+
+    if not username or not password or not role:
+        return jsonify({"status": "error", "message": "缺少必要欄位"}), 400
+
+    has_permission, message = check_permissions(current_user, "Admin")
     if not has_permission:
-        logging.warning("Permission denied: Attempt to create user without Admin privileges.")
         return jsonify({"status": "error", "message": message}), 403
 
-    data = request.json
-    if not data or "user_name" not in data or "password" not in data or "role" not in data:
-        logging.warning("Failed user creation attempt due to missing required fields.")
-        return jsonify({"status": "error", "message": "Missing required fields"}), 400
-
-    username = data['user_name']
-    password = data['password']
-    role = data['role']
-
-    logging.info(f"Attempting to create user: username={username}, role={role}")
-
-    # Call the create_user function
     result_message = create_user(username, password, role)
     if "Error" in result_message:
-        logging.error(f"Failed to create user: username={username}, reason={result_message}")
         return jsonify({"status": "error", "message": result_message}), 500
 
-    logging.info(f"User created successfully: username={username}, role={role}")
     return jsonify({"status": "success", "message": result_message}), 201
 
 
@@ -128,14 +206,27 @@ def delete_user_endpoint(user_id):
     """
     Endpoint for deleting a user.
 
+    Input JSON:
+        {
+            "username": "b11705023"
+        }
+
     Args:
         user_id (int): User ID to delete.
 
     Returns:
-        JSON with status and message.
+        JSON with status and message
     """
+    # check if the user is logged in
+    data = request.json
+    username = data.get("username")
+    if username not in logged_in_users:
+        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
+    
     # Role check: only Admin can delete users
-    has_permission, message = check_permissions("Admin")
+    data = request.json
+    username = data.get("username")
+    has_permission, message = check_permissions(username, "Admin")
     if not has_permission:
         return jsonify({"status": "error", "message": message}), 403
 
@@ -161,10 +252,17 @@ def update_user_endpoint(user_id):
     Returns:
         JSON with status and message.
     """
-    # Role check: Admins can update any user, Users can update themselves
-    if 'user_id' not in session or (session['role'] != "Admin" and session['user_id'] != user_id):
-        return jsonify({"status": "error", "message": "Unauthorized"}), 403
-
+    # check if the user is logged in
+    data = request.json
+    username = data.get("username")
+    if username not in logged_in_users:
+        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
+    
+    # Role check: only Admin can update users
+    has_permission, message = check_permissions(username, "Admin")
+    if not has_permission:
+        return jsonify({"status": "error", "message": message}), 403
+    
     data = request.json
     if not data:
         return jsonify({"status": "error", "message": "Missing data to update"}), 400
@@ -185,9 +283,16 @@ def get_user_details_endpoint(user_id):
     Returns:
         JSON with status and user details.
     """
-    # Role check: Admins can retrieve any user details, Users can retrieve their own
-    if 'user_id' not in session or (session['role'] != "Admin" and session['user_id'] != user_id):
-        return jsonify({"status": "error", "message": "Unauthorized"}), 403
+    # check if the user is logged in
+    data = request.json
+    username = data.get("username")
+    if username not in logged_in_users:
+        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
+    
+    # Role check: only Admin can view user details
+    has_permission, message = check_permissions(username, "Admin")
+    if not has_permission:
+        return jsonify({"status": "error", "message": message}), 403
 
     user_details = get_user_details(user_id)
     if user_details["status"] == "error":
@@ -210,8 +315,14 @@ def assign_role_endpoint(user_id):
     Returns:
         JSON with status and message.
     """
+    # check if the user is logged in
+    data = request.json
+    username = data.get("username")
+    if username not in logged_in_users:
+        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
+    
     # Role check: only Admin can assign roles
-    has_permission, message = check_permissions("Admin")
+    has_permission, message = check_permissions(username, "Admin")
     if not has_permission:
         return jsonify({"status": "error", "message": message}), 403
 
@@ -242,8 +353,14 @@ def change_role_endpoint(user_id):
     Returns:
         JSON with status and message.
     """
+    # check if the user is logged in
+    data = request.json
+    username = data.get("username")
+    if username not in logged_in_users:
+        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
+    
     # Role check: only Admin can change roles
-    has_permission, message = check_permissions("Admin")
+    has_permission, message = check_permissions(username, "Admin")
     if not has_permission:
         return jsonify({"status": "error", "message": message}), 403
 
