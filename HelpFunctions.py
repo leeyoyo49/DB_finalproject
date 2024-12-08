@@ -101,7 +101,7 @@ def get_alumni(alumni_id):
     """
     try:
         # SQL query to fetch alumni details
-        sql_query = "SELECT * FROM alumni WHERE alumni_id = $1"
+        sql_query = "SELECT * FROM alumni WHERE alumni_id = %s"
         # Execute the query with the provided alumni ID
         columns, results = query(sql_query, (alumni_id,))
         
