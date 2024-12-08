@@ -245,107 +245,151 @@ def get_alumni_by_graduation_year(year):
         logging.error("Error retrieving alumni by graduation year", exc_info=True)
         return {"status": "error", "message": str(e)}
 
-
 def list_alumni():
     """
-    Lists all alumni.
+    Lists all alumni in the database.
 
     Returns:
-        dict: List of alumni or error message.
+        dict: A dictionary containing:
+            - 'status' (str): 'success' or 'error'.
+            - 'alumni_list' (list): List of alumni records as dictionaries (on success).
+            - 'message' (str): Error message (on failure).
     """
     try:
+        # SQL query to fetch all alumni records
         sql_query = "SELECT * FROM alumni"
-        columns, results = query(con, sql_query)
+        
+        # Execute the query
+        columns, results = query(sql_query)
+        
+        # Convert results to a list of dictionaries
         alumni_list = [dict(zip(columns, row)) for row in results]
+        
         return {"status": "success", "alumni_list": alumni_list}
     except Exception as e:
+        logging.error("Error listing alumni", exc_info=True)
         return {"status": "error", "message": str(e)}
 
-# Alumni-Specific Functions
 def update_alumni_career_history(alumni_id, career_data):
     """
-    Updates an alumni's career history.
+    Updates an alumni's career history in the database.
 
     Args:
-        alumni_id (int): Alumni ID.
-        career_data (dict): Career history details.
+        alumni_id (int): The unique ID of the alumni.
+        career_data (dict): A dictionary containing career history details:
+            - job_title (str): The title of the job. (Required)
+            - company (str): The name of the company. (Required)
+            - start_date (str): The start date of the job in YYYY-MM-DD format. (Required)
+            - end_date (str): The end date of the job in YYYY-MM-DD format. (Optional)
+            - monthly_salary (float): The monthly salary for the job. (Optional)
 
     Returns:
-        str: Success or error message.
+        str: A success message or an error message.
     """
     try:
+        # SQL query to insert new career history for the alumni
         sql_query = """
             INSERT INTO career_history (job_title, company, start_date, end_date, monthly_salary, alumni_id)
             VALUES (%s, %s, %s, %s, %s, %s)
         """
-        query(con, sql_query, (
-            career_data['job_title'], career_data['company'], career_data['start_date'],
-            career_data.get('end_date'), career_data.get('monthly_salary'), alumni_id
-        ))
-        return "Career history updated successfully."
+        
+        # Execute the query with the provided career data
+        params = (
+            career_data['job_title'],
+            career_data['company'],
+            career_data['start_date'],
+            career_data.get('end_date'),
+            career_data.get('monthly_salary'),
+            alumni_id
+        )
+        
+        rows_affected = execute_update(sql_query, params)
+        return "Career history updated successfully." if rows_affected else "No records updated."
     except Exception as e:
+        logging.error("Error updating career history", exc_info=True)
         return f"Error: {str(e)}"
 
 def get_alumni_donations(alumni_id):
     """
-    Retrieves alumni donations.
+    Retrieves a list of donations made by an alumni.
 
     Args:
-        alumni_id (int): Alumni ID.
+        alumni_id (int): The unique ID of the alumni.
 
     Returns:
-        dict: Donations list or error message.
+        dict: A dictionary containing:
+            - 'status' (str): 'success' or 'error'.
+            - 'donations' (list): List of donation records as dictionaries (on success).
+            - 'message' (str): Error message (on failure).
     """
     try:
+        # SQL query to retrieve donations for a specific alumni
         sql_query = "SELECT * FROM donation WHERE alumni_id = %s"
-        columns, results = query(con, sql_query, (alumni_id,))
+
+        # Execute the query
+        columns, results = query(sql_query, (alumni_id,))
+
+        # Convert results to a list of dictionaries
         donations = [dict(zip(columns, row)) for row in results]
+
         return {"status": "success", "donations": donations}
     except Exception as e:
+        logging.error("Error retrieving alumni donations", exc_info=True)
         return {"status": "error", "message": str(e)}
 
 def get_alumni_achievements(alumni_id):
     """
-    Retrieves alumni achievements.
+    Retrieves a list of achievements for a specific alumni.
 
     Args:
-        alumni_id (int): Alumni ID.
+        alumni_id (int): The unique ID of the alumni.
 
     Returns:
-        dict: Achievements list or error message.
+        dict: A dictionary containing:
+            - 'status' (str): 'success' or 'error'.
+            - 'achievements' (list): List of achievement records as dictionaries (on success).
+            - 'message' (str): Error message (on failure).
     """
     try:
+        # SQL query to retrieve achievements for a specific alumni
         sql_query = "SELECT * FROM achievement WHERE alumni_id = %s"
-        columns, results = query(con, sql_query, (alumni_id,))
+
+        # Execute the query
+        columns, results = query(sql_query, (alumni_id,))
+
+        # Convert results to a list of dictionaries
         achievements = [dict(zip(columns, row)) for row in results]
+
         return {"status": "success", "achievements": achievements}
     except Exception as e:
+        logging.error("Error retrieving alumni achievements", exc_info=True)
         return {"status": "error", "message": str(e)}
-    
-# User Management Functions
 
 def create_user(username, password, role):
     """
     Creates a new user in the database.
 
     Args:
-        user_name (str): Username for the new user.
-        password (str): Password for the new user.
-        role (str): Role of the user (e.g., 'Admin', 'User', 'Analyst').
+        username (str): Username for the new user. (Required)
+        password (str): Password for the new user. (Required)
+        role (str): Role of the user (e.g., 'Admin', 'User', 'Analyst'). (Required)
 
     Returns:
-        str: Success or error message.
+        str: A success message or an error message.
     """
-    
     try:
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        # SQL query to insert a new user
         sql_query = """
             INSERT INTO user_ (user_name, password, role)
             VALUES (%s, %s, %s)
         """
-        query(con, sql_query, (username, hashed_password, role))
-        return "User created successfully."
+        
+        # Execute the query with the provided parameters
+        rows_affected = execute_update(sql_query, (username, password, role))
+        
+        return "User created successfully." if rows_affected else "Failed to create user."
     except Exception as e:
+        logging.error("Error creating user", exc_info=True)
         return f"Error: {str(e)}"
 
 def delete_user(user_id):
@@ -353,17 +397,23 @@ def delete_user(user_id):
     Deletes a user from the database.
 
     Args:
-        user_id (int): ID of the user to delete.
+        user_id (int): ID of the user to delete. (Required)
 
     Returns:
-        str: Success or error message.
+        str: A success message or an error message.
     """
     try:
-        sql_query = "DELETE FROM users WHERE id = %s"
-        query(con, sql_query, (user_id,))
-        return "User deleted successfully."
+        # SQL query to delete a user
+        sql_query = "DELETE FROM user_ WHERE user_id = %s"
+
+        # Execute the query with the user ID as a parameter
+        rows_affected = execute_update(sql_query, (user_id,))
+        
+        return "User deleted successfully." if rows_affected else "No user found with the given ID."
     except Exception as e:
+        logging.error("Error deleting user", exc_info=True)
         return f"Error: {str(e)}"
+
 
 def update_user(user_id, data):
     """
@@ -379,7 +429,7 @@ def update_user(user_id, data):
     try:
         updates = ", ".join(f"{key} = %s" for key in data.keys())
         sql_query = f"UPDATE users SET {updates} WHERE id = %s"
-        query(con, sql_query, (*data.values(), user_id))
+        query(sql_query, (*data.values(), user_id))
         return "User updated successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -396,7 +446,7 @@ def get_user_details(user_id):
     """
     try:
         sql_query = "SELECT id, username, role FROM users WHERE id = %s"
-        columns, results = query(con, sql_query, (user_id,))
+        columns, results = query(sql_query, (user_id,))
         if not results:
             return {"status": "error", "message": "User not found"}
         
@@ -420,7 +470,7 @@ def assign_role(user_id, role):
     """
     try:
         sql_query = "UPDATE users SET role = %s WHERE alumni_id = %s"
-        query(con, sql_query, (role, user_id))
+        query(sql_query, (role, user_id))
         return "Role assigned successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -456,7 +506,7 @@ def add_career_history(alumni_id, career_data):
             INSERT INTO career_history (job_title, company, start_date, end_date, monthly_salary, alumni_id)
             VALUES (%s, %s, %s, %s, %s, %s)
         """
-        query(con, sql_query, (
+        query(sql_query, (
             career_data['job_title'], career_data['company'], career_data['start_date'],
             career_data.get('end_date'), career_data.get('monthly_salary'), alumni_id
         ))
@@ -478,7 +528,7 @@ def update_career_history(career_id, data):
     try:
         updates = ", ".join(f"{key} = %s" for key in data.keys())
         sql_query = f"UPDATE career_history SET {updates} WHERE career_id = %s"
-        query(con, sql_query, (*data.values(), career_id))
+        query(sql_query, (*data.values(), career_id))
         return "Career history updated successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -495,7 +545,7 @@ def delete_career_history(career_id):
     """
     try:
         sql_query = "DELETE FROM career_history WHERE career_id = %s"
-        query(con, sql_query, (career_id,))
+        query(sql_query, (career_id,))
         return "Career history deleted successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -512,7 +562,7 @@ def get_career_history(career_id):
     """
     try:
         sql_query = "SELECT * FROM career_history WHERE career_id = %s"
-        columns, results = query(con, sql_query, (career_id,))
+        columns, results = query(sql_query, (career_id,))
         if not results:
             return {"status": "error", "message": "Career history not found"}
 
@@ -541,7 +591,7 @@ def get_salary_trends(department, year_range):
             JOIN degree_ d ON ch.alumni_id = d.alumni_id
             WHERE d.department = %s AND EXTRACT(YEAR FROM ch.start_date) BETWEEN %s AND %s
         """
-        columns, results = query(con, sql_query, (department, start_year, end_year))
+        columns, results = query(sql_query, (department, start_year, end_year))
         salary_trends = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "salary_trends": salary_trends}
     except Exception as e:
@@ -564,7 +614,7 @@ def get_career_paths(alumni_id):
             WHERE alumni_id = %s
             ORDER BY start_date ASC
         """
-        columns, results = query(con, sql_query, (alumni_id,))
+        columns, results = query(sql_query, (alumni_id,))
         career_paths = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "career_paths": career_paths}
     except Exception as e:
@@ -589,7 +639,7 @@ def record_donation(alumni_id, donation_data):
             INSERT INTO donation (alumni_id, amount, date, campaign_id)
             VALUES (%s, %s, %s, %s)
         """
-        query(con, sql_query, (
+        query(sql_query, (
             alumni_id, donation_data['amount'], donation_data['date'], donation_data.get('campaign_id')
         ))
         return "Donation recorded successfully."
@@ -610,7 +660,7 @@ def update_donation(donation_id, data):
     try:
         updates = ", ".join(f"{key} = %s" for key in data.keys())
         sql_query = f"UPDATE donation SET {updates} WHERE donation_id = %s"
-        query(con, sql_query, (*data.values(), donation_id))
+        query(sql_query, (*data.values(), donation_id))
         return "Donation updated successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -627,7 +677,7 @@ def delete_donation(donation_id):
     """
     try:
         sql_query = "DELETE FROM donation WHERE donation_id = %s"
-        query(con, sql_query, (donation_id,))
+        query(sql_query, (donation_id,))
         return "Donation deleted successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -644,7 +694,7 @@ def get_donation(donation_id):
     """
     try:
         sql_query = "SELECT * FROM donation WHERE donation_id = %s"
-        columns, results = query(con, sql_query, (donation_id,))
+        columns, results = query(sql_query, (donation_id,))
         if not results:
             return {"status": "error", "message": "Donation not found"}
 
@@ -666,7 +716,7 @@ def get_total_donations_by_alumni(alumni_id):
     """
     try:
         sql_query = "SELECT SUM(amount) as total_donations FROM donation WHERE alumni_id = %s"
-        columns, results = query(con, sql_query, (alumni_id,))
+        columns, results = query(sql_query, (alumni_id,))
         total_donations = dict(zip(columns, results[0]))
         return {"status": "success", "total_donations": total_donations}
     except Exception as e:
@@ -690,7 +740,7 @@ def get_top_donors(limit=10):
             ORDER BY total_amount DESC
             LIMIT %s
         """
-        columns, results = query(con, sql_query, (limit,))
+        columns, results = query(sql_query, (limit,))
         top_donors = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "top_donors": top_donors}
     except Exception as e:
@@ -715,7 +765,7 @@ def get_donation_trends(year_range):
             GROUP BY year
             ORDER BY year
         """
-        columns, results = query(con, sql_query, (start_year, end_year))
+        columns, results = query(sql_query, (start_year, end_year))
         trends = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "donation_trends": trends}
     except Exception as e:
@@ -740,7 +790,7 @@ def add_achievement(alumni_id, achievement_data):
             INSERT INTO achievement (alumni_id, title, description, date, category)
             VALUES (%s, %s, %s, %s, %s)
         """
-        query(con, sql_query, (
+        query(sql_query, (
             alumni_id, achievement_data['title'], achievement_data['description'], 
             achievement_data['date'], achievement_data['category']
         ))
@@ -762,7 +812,7 @@ def update_achievement(achievement_id, data):
     try:
         updates = ", ".join(f"{key} = %s" for key in data.keys())
         sql_query = f"UPDATE achievement SET {updates} WHERE achievement_id = %s"
-        query(con, sql_query, (*data.values(), achievement_id))
+        query(sql_query, (*data.values(), achievement_id))
         return "Achievement updated successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -779,7 +829,7 @@ def delete_achievement(achievement_id):
     """
     try:
         sql_query = "DELETE FROM achievement WHERE achievement_id = %s"
-        query(con, sql_query, (achievement_id,))
+        query(sql_query, (achievement_id,))
         return "Achievement deleted successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -796,7 +846,7 @@ def get_achievement(achievement_id):
     """
     try:
         sql_query = "SELECT * FROM achievement WHERE achievement_id = %s"
-        columns, results = query(con, sql_query, (achievement_id,))
+        columns, results = query(sql_query, (achievement_id,))
         if not results:
             return {"status": "error", "message": "Achievement not found"}
 
@@ -818,7 +868,7 @@ def list_achievements(alumni_id):
     """
     try:
         sql_query = "SELECT * FROM achievement WHERE alumni_id = %s"
-        columns, results = query(con, sql_query, (alumni_id,))
+        columns, results = query(sql_query, (alumni_id,))
         achievements = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "achievements": achievements}
     except Exception as e:
@@ -836,7 +886,7 @@ def find_achievements_by_category(category):
     """
     try:
         sql_query = "SELECT * FROM achievement WHERE category = %s"
-        columns, results = query(con, sql_query, (category,))
+        columns, results = query(sql_query, (category,))
         achievements = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "achievements": achievements}
     except Exception as e:
@@ -860,7 +910,7 @@ def create_association(data):
             INSERT INTO association (name, description, created_date)
             VALUES (%s, %s, %s)
         """
-        query(con, sql_query, (data['name'], data['description'], data['created_date']))
+        query(sql_query, (data['name'], data['description'], data['created_date']))
         return "Association created successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -879,7 +929,7 @@ def update_association(association_id, data):
     try:
         updates = ", ".join(f"{key} = %s" for key in data.keys())
         sql_query = f"UPDATE association SET {updates} WHERE association_id = %s"
-        query(con, sql_query, (*data.values(), association_id))
+        query(sql_query, (*data.values(), association_id))
         return "Association updated successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -896,7 +946,7 @@ def delete_association(association_id):
     """
     try:
         sql_query = "DELETE FROM association WHERE association_id = %s"
-        query(con, sql_query, (association_id,))
+        query(sql_query, (association_id,))
         return "Association deleted successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -913,7 +963,7 @@ def get_association(association_id):
     """
     try:
         sql_query = "SELECT * FROM association WHERE association_id = %s"
-        columns, results = query(con, sql_query, (association_id,))
+        columns, results = query(sql_query, (association_id,))
         if not results:
             return {"status": "error", "message": "Association not found"}
 
@@ -939,7 +989,7 @@ def add_member_to_association(alumni_id, association_id):
             INSERT INTO association_membership (alumni_id, association_id)
             VALUES (%s, %s)
         """
-        query(con, sql_query, (alumni_id, association_id))
+        query(sql_query, (alumni_id, association_id))
         return "Member added to association successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -957,7 +1007,7 @@ def remove_member_from_association(alumni_id, association_id):
     """
     try:
         sql_query = "DELETE FROM association_membership WHERE alumni_id = %s AND association_id = %s"
-        query(con, sql_query, (alumni_id, association_id))
+        query(sql_query, (alumni_id, association_id))
         return "Member removed from association successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -979,7 +1029,7 @@ def list_association_members(association_id):
             JOIN alumni al ON a.alumni_id = al.alumni_id
             WHERE a.association_id = %s
         """
-        columns, results = query(con, sql_query, (association_id,))
+        columns, results = query(sql_query, (association_id,))
         members = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "members": members}
     except Exception as e:
@@ -1002,7 +1052,7 @@ def create_event(association_id, event_data):
             INSERT INTO association_event (association_id, title, description, event_date)
             VALUES (%s, %s, %s, %s)
         """
-        query(con, sql_query, (
+        query(sql_query, (
             association_id, event_data['title'], event_data['description'], event_data['event_date']
         ))
         return "Event created successfully."
@@ -1023,7 +1073,7 @@ def update_event(event_id, data):
     try:
         updates = ", ".join(f"{key} = %s" for key in data.keys())
         sql_query = f"UPDATE association_event SET {updates} WHERE event_id = %s"
-        query(con, sql_query, (*data.values(), event_id))
+        query(sql_query, (*data.values(), event_id))
         return "Event updated successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -1040,7 +1090,7 @@ def delete_event(event_id):
     """
     try:
         sql_query = "DELETE FROM association_event WHERE event_id = %s"
-        query(con, sql_query, (event_id,))
+        query(sql_query, (event_id,))
         return "Event deleted successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -1057,7 +1107,7 @@ def list_events_by_association(association_id):
     """
     try:
         sql_query = "SELECT * FROM association_event WHERE association_id = %s"
-        columns, results = query(con, sql_query, (association_id,))
+        columns, results = query(sql_query, (association_id,))
         events = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "events": events}
     except Exception as e:
@@ -1081,7 +1131,7 @@ def create_association(data):
             INSERT INTO association (name, description, created_date)
             VALUES (%s, %s, %s)
         """
-        query(con, sql_query, (data['name'], data['description'], data['created_date']))
+        query(sql_query, (data['name'], data['description'], data['created_date']))
         return "Association created successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -1100,7 +1150,7 @@ def update_association(association_id, data):
     try:
         updates = ", ".join(f"{key} = %s" for key in data.keys())
         sql_query = f"UPDATE association SET {updates} WHERE association_id = %s"
-        query(con, sql_query, (*data.values(), association_id))
+        query(sql_query, (*data.values(), association_id))
         return "Association updated successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -1117,7 +1167,7 @@ def delete_association(association_id):
     """
     try:
         sql_query = "DELETE FROM association WHERE association_id = %s"
-        query(con, sql_query, (association_id,))
+        query(sql_query, (association_id,))
         return "Association deleted successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -1134,7 +1184,7 @@ def get_association(association_id):
     """
     try:
         sql_query = "SELECT * FROM association WHERE association_id = %s"
-        columns, results = query(con, sql_query, (association_id,))
+        columns, results = query(sql_query, (association_id,))
         if not results:
             return {"status": "error", "message": "Association not found"}
 
@@ -1160,7 +1210,7 @@ def add_member_to_association(alumni_id, association_id):
             INSERT INTO association_membership (alumni_id, association_id)
             VALUES (%s, %s)
         """
-        query(con, sql_query, (alumni_id, association_id))
+        query(sql_query, (alumni_id, association_id))
         return "Member added to association successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -1178,7 +1228,7 @@ def remove_member_from_association(alumni_id, association_id):
     """
     try:
         sql_query = "DELETE FROM association_membership WHERE alumni_id = %s AND association_id = %s"
-        query(con, sql_query, (alumni_id, association_id))
+        query(sql_query, (alumni_id, association_id))
         return "Member removed from association successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -1200,7 +1250,7 @@ def list_association_members(association_id):
             JOIN alumni al ON a.alumni_id = al.alumni_id
             WHERE a.association_id = %s
         """
-        columns, results = query(con, sql_query, (association_id,))
+        columns, results = query(sql_query, (association_id,))
         members = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "members": members}
     except Exception as e:
@@ -1223,7 +1273,7 @@ def create_event(association_id, event_data):
             INSERT INTO association_event (association_id, title, description, event_date)
             VALUES (%s, %s, %s, %s)
         """
-        query(con, sql_query, (
+        query(sql_query, (
             association_id, event_data['title'], event_data['description'], event_data['event_date']
         ))
         return "Event created successfully."
@@ -1244,7 +1294,7 @@ def update_event(event_id, data):
     try:
         updates = ", ".join(f"{key} = %s" for key in data.keys())
         sql_query = f"UPDATE association_event SET {updates} WHERE event_id = %s"
-        query(con, sql_query, (*data.values(), event_id))
+        query(sql_query, (*data.values(), event_id))
         return "Event updated successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -1261,7 +1311,7 @@ def delete_event(event_id):
     """
     try:
         sql_query = "DELETE FROM association_event WHERE event_id = %s"
-        query(con, sql_query, (event_id,))
+        query(sql_query, (event_id,))
         return "Event deleted successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -1278,7 +1328,7 @@ def list_events_by_association(association_id):
     """
     try:
         sql_query = "SELECT * FROM association_event WHERE association_id = %s"
-        columns, results = query(con, sql_query, (association_id,))
+        columns, results = query(sql_query, (association_id,))
         events = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "events": events}
     except Exception as e:
@@ -1308,7 +1358,7 @@ def get_alumni_employment_trends(department, year_range):
             GROUP BY graduation_year
             ORDER BY graduation_year
         """
-        columns, results = query(con, sql_query, (department, start_year, end_year))
+        columns, results = query(sql_query, (department, start_year, end_year))
         trends = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "employment_trends": trends}
     except Exception as e:
@@ -1329,7 +1379,7 @@ def analyze_event_participation_rates():
             GROUP BY event_id, title
             ORDER BY total_participants DESC
         """
-        columns, results = query(con, sql_query)
+        columns, results = query(sql_query)
         participation_rates = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "participation_rates": participation_rates}
     except Exception as e:
@@ -1349,7 +1399,7 @@ def calculate_donation_correlations():
             JOIN alumni al ON d.alumni_id = al.alumni_id
             GROUP BY al.department
         """
-        columns, results = query(con, sql_query)
+        columns, results = query(sql_query)
         correlations = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "donation_correlations": correlations}
     except Exception as e:
@@ -1369,7 +1419,7 @@ def generate_30_year_reunion_list():
             FROM alumni
             WHERE graduation_year = EXTRACT(YEAR FROM NOW()) - 30
         """
-        columns, results = query(con, sql_query)
+        columns, results = query(sql_query)
         reunion_list = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "reunion_list": reunion_list}
     except Exception as e:
@@ -1392,7 +1442,7 @@ def get_top_achievers(limit=10):
             ORDER BY date DESC
             LIMIT %s
         """
-        columns, results = query(con, sql_query, (limit,))
+        columns, results = query(sql_query, (limit,))
         top_achievers = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "top_achievers": top_achievers}
     except Exception as e:
@@ -1416,7 +1466,7 @@ def get_event_participation_statistics(event_id):
             WHERE ep.event_id = %s
             GROUP BY event_id, title
         """
-        columns, results = query(con, sql_query, (event_id,))
+        columns, results = query(sql_query, (event_id,))
         if not results:
             return {"status": "error", "message": "Event not found or no participants"}
 
@@ -1444,7 +1494,7 @@ def add_event_participant(alumni_id, event_id):
             INSERT INTO event_participation (alumni_id, event_id)
             VALUES (%s, %s)
         """
-        query(con, sql_query, (alumni_id, event_id))
+        query(sql_query, (alumni_id, event_id))
         return "Participant added to event successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -1462,7 +1512,7 @@ def remove_event_participant(alumni_id, event_id):
     """
     try:
         sql_query = "DELETE FROM event_participation WHERE alumni_id = %s AND event_id = %s"
-        query(con, sql_query, (alumni_id, event_id))
+        query(sql_query, (alumni_id, event_id))
         return "Participant removed from event successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -1484,7 +1534,7 @@ def list_participants(event_id):
             JOIN alumni al ON ep.alumni_id = al.alumni_id
             WHERE ep.event_id = %s
         """
-        columns, results = query(con, sql_query, (event_id,))
+        columns, results = query(sql_query, (event_id,))
         participants = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "participants": participants}
     except Exception as e:
@@ -1507,7 +1557,7 @@ def get_participation_by_alumni(alumni_id):
             JOIN association_event ae ON ep.event_id = ae.event_id
             WHERE ep.alumni_id = %s
         """
-        columns, results = query(con, sql_query, (alumni_id,))
+        columns, results = query(sql_query, (alumni_id,))
         events = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "events": events}
     except Exception as e:
