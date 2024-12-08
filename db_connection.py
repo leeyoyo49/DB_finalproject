@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 
 # PostgreSQL connection setup
 DB_PASSWORD = '0418'  # Replace with your actual PostgreSQL password
-#DB_PASSWORD = ''  # Replace with your actual PostgreSQL password
+# DB_PASSWORD = ''  # Replace with your actual PostgreSQL password
 DB_NAME = 'final proposal'     # Replace with your actual database name
 DB_USER = 'postgres'           # PostgreSQL user
 DB_HOST = 'localhost'          # Host address
@@ -35,10 +35,15 @@ def connect_to_db():
     Returns:
         duckdb.Connection: A DuckDB connection with registered tables.
     """
-    # Create SQLAlchemy engine for PostgreSQL
+    # Create SQLAlchemy engine for PostgreSQL jay
     engine = create_engine(
         f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5433/{DB_NAME}"
     )
+
+    # yo
+    # engine = create_engine(
+    #     f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}"
+    # )
 
     # DuckDB connection
     con = duckdb.connect()

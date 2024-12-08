@@ -89,8 +89,9 @@ def get_alumni(alumni_id):
 
 def update_alumni(alumni_id, data):
     try:
-        updates = ", ".join(f"{key} = ${i+1}" for i, key in enumerate(data.keys()))  # Construct column-value pairs with the correct index
         
+        updates = ", ".join(f"{key} = ${i+1}" for i, key in enumerate(data.keys()))  # Construct column-value pairs with the correct index
+        print(updates)
         sql_query = f"UPDATE alumni SET {updates} WHERE alumni_id = ${len(data)+1}"  # alumni_id should be the last placeholder
         
         params = tuple(data.values()) + (alumni_id,)  # Add alumni_id as the last parameter
@@ -100,12 +101,7 @@ def update_alumni(alumni_id, data):
         print(f"Parameters: {params}")
         
 
-        # Execute the query with the parameters
-        with con.cursor() as cursor:
-            cursor.execute(sql_query, params)
-
-        # Commit the transaction
-        con.commit()
+        query(con, sql_query, params)
 
         return "Alumni updated successfully."
 
