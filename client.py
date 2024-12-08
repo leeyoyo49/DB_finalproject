@@ -230,6 +230,35 @@ def add_job(alumni_id):
             print(f"Failed to add career history: {response.json()['message']}")
     except requests.exceptions.RequestException as e:
         print(f"Error during request: {e}")
+        
+def get_personal_association(alumni_id):
+    """
+    Fetches all events an alumni has participated in from the server.
+
+    Args:
+        alumni_id (int): Alumni ID.
+        base_url (str): Base URL of the Flask application (default: localhost).
+
+    Returns:
+        dict: JSON response containing event details or an error message.
+    """
+    try:
+        # Construct the full URL for the API endpoint
+        url = f"{BASE_URL}/get_participation_by_alumni/{alumni_id}"
+        
+        # Send a GET request to the API
+        response = requests.get(url)
+        
+        # Check for HTTP errors
+        response.raise_for_status()
+        
+        # Parse and return JSON data
+        return response.json()
+    except requests.exceptions.HTTPError as http_err:
+        return {"status": "error", "message": f"HTTP error occurred: {http_err}"}
+    except Exception as err:
+        return {"status": "error", "message": f"An error occurred: {err}"}
+    
     
 def alumni_operations():
     global ROLE, USER_ID, USER_NAME, ALUMNI_ID
@@ -329,12 +358,53 @@ def alumni_operations():
             print("Achievements functionality is under construction.")
 
         elif choice == "4":
-            print("\n=== Donation ===")
-            print("Donation functionality is under construction.")
+            print("\n=== Your Donation History ===")
 
         elif choice == "5":
             print("\n=== Alumni Association ===")
+            print("1. View your affiliated association")
+            print("2. View your association events")
+            print("3. View all alumni associations")
+            print("4. View all upcoming events")
+            print("5. Join an alumni association event")
+            print("6. Join an alumni association")
+            print("7. I am a cadre of the alumni association")
             print("Alumni Association functionality is under construction.")
+            
+            sub_choice = input("Enter your choice: ")
+            
+            if sub_choice == '1':
+                print("\n=== Your Affiliated Association ===")
+                response = get_personal_association(ALUMNI_ID)
+                if response["status"] == "error":
+                    print(f"Error: {response['message']}")
+                else:
+                    print(response)
+                #print("Affiliated Association functionality is under construction.")
+            elif sub_choice == '2':
+                print("\n=== Your Association Events ===")
+                print("Association Events functionality is under construction.")
+            elif sub_choice == '3':
+                print("\n=== All Alumni Associations ===")
+                print("All Alumni Associations functionality is under construction.")
+            elif sub_choice == '4':
+                print("\n=== All Upcoming Events ===")
+                print("All Upcoming Events functionality is under construction.")
+            elif sub_choice == '5':
+                print("\n=== Join an Alumni Association Event ===")
+                print("Please contact the association that holds the event for details.")
+            elif sub_choice == '5':
+                print("\n=== Join an Alumni Association ===")
+                print("Please contact the association for more information.")
+            elif sub_choice == '6':
+                print("\n=== I am a Cadre of the Alumni Association ===")
+                print("1. Add a new member")
+                print("2. Delete a member")
+                print("3. Add an event")
+                print("4. Delete an event")
+                print("5. Add a participant to an event")
+                print("6. Delete a participant from an event")
+                print("7. Transfer the position of cadre")
 
         elif choice == "6":
             print("Exiting alumni operations.")

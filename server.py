@@ -1368,7 +1368,7 @@ def list_participants_endpoint(event_id):
         return jsonify(participants), 404
     return jsonify(participants), 200
 
-@app.route('/get_participation_by_alumni/<int:alumni_id>', methods=['GET'])
+@app.route('/get_participation_by_alumni/<string:alumni_id>', methods=['GET'])
 def get_participation_by_alumni_endpoint(alumni_id):
     """
     Retrieves all events an alumni has participated in.

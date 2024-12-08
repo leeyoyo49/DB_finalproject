@@ -1402,7 +1402,7 @@ def analyze_event_participation_rates():
     try:
         sql_query = """
             SELECT event_id, title, COUNT(participant_id) AS total_participants
-            FROM event_participation ep
+            FROM participated_by ep
             JOIN association_event ae ON ep.event_id = ae.event_id
             GROUP BY event_id, title
             ORDER BY total_participants DESC
@@ -1489,7 +1489,7 @@ def get_event_participation_statistics(event_id):
     try:
         sql_query = """
             SELECT event_id, title, COUNT(participant_id) AS total_participants
-            FROM event_participation ep
+            FROM participated_by ep
             JOIN association_event ae ON ep.event_id = ae.event_id
             WHERE ep.event_id = %s
             GROUP BY event_id, title
@@ -1519,7 +1519,7 @@ def add_event_participant(alumni_id, event_id):
     """
     try:
         sql_query = """
-            INSERT INTO event_participation (alumni_id, event_id)
+            INSERT INTO participated_by (alumni_id, event_id)
             VALUES (%s, %s)
         """
         query(sql_query, (alumni_id, event_id))

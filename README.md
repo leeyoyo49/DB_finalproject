@@ -10,6 +10,7 @@
 ## 業務經營者 (alumni association)
 * 新增 活動 (association event)
 * 更新 幹部名單
+* 新增 活動成員
 * 新增 校友會成員
 * 刪除 校友會成員
   
@@ -23,10 +24,11 @@
 * 新增 畢業生帳號 (初次登入 -> 帳號：學號，密碼：0000)
 * 刪除 校友資料(all)
 * 更改 校友資料(all)
-* 更改 權限 (Role) (一旦 association 更新幹部名單)
 * 新增 校友會(all)
 * 刪除 校友會(all)
 * 更新 校友會(all)
+* 新增 donation
+* 新增 achievement
 
 ChatGPT:
 # DB final project
