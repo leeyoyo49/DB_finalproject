@@ -1141,9 +1141,10 @@ def create_event_endpoint(association_id):
 
     Input JSON:
         {
-            "title": "Annual Meetup",
-            "description": "A networking event for all alumni members.",
-            "event_date": "2024-05-15"
+            "event_name": 1,
+            "date": "2024-05-15",
+            'description': "Annual networking event.",
+            'location': "123 Main St, City, Country"    
         }
 
     Args:
@@ -1153,7 +1154,7 @@ def create_event_endpoint(association_id):
         JSON with status and message.
     """
     event_data = request.json
-    if not event_data or not all(k in event_data for k in ['title', 'description', 'event_date']):
+    if not event_data or not all(k in event_data for k in ['event_name', 'date']):
         return jsonify({"status": "error", "message": "Missing required fields"}), 400
 
     message = create_event(association_id, event_data)
@@ -1161,19 +1162,22 @@ def create_event_endpoint(association_id):
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 201
 
-@app.route('/update_event/<int:event_id>', methods=['PUT'])
+@app.route('/update_event/<int:association_id>', methods=['PUT'])
 def update_event_endpoint(event_id):
     """
-    Updates an event record.
+    Updates an event record, can only change the description and location.
+    Since the event name and date are unique, they cannot be changed.
 
     Input JSON:
         {
-            "title": "Updated Annual Meetup",
-            "description": "Updated networking event details."
+            "event_name": 1,
+            "date": "2024-05-15",
+            'description': "Annual networking event.",
+            'location': "123 Main St, City, Country"    
         }
 
     Args:
-        event_id (int): ID of the event to update.
+        association (int): ID of the association to update.
 
     Returns:
         JSON with status and message.
@@ -1187,18 +1191,21 @@ def update_event_endpoint(event_id):
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 200
 
-@app.route('/delete_event/<int:event_id>', methods=['DELETE'])
+@app.route('/delete_event/<int:association_id>', methods=['DELETE'])
 def delete_event_endpoint(event_id):
     """
     Deletes an event.
 
-    Args:
-        event_id (int): ID of the event to delete.
-
+    JSON:
+        {
+            "event_name": 1,
+            "date": "2024-05-15",
+        }
     Returns:
         JSON with status and message.
     """
-    message = delete_event(event_id)
+    data = request.json
+    message = delete_event(event_id, data)
     if "Error" in message:
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 200

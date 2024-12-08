@@ -9,7 +9,8 @@ DB_NAME = 'final proposal'  # Replace with your actual database name
 DB_USER = 'postgres'  # PostgreSQL user
 DB_HOST = 'localhost'  # Host address
 #DB_PORT = '5433'  # Port
-DB_PORT = os.getenv('DB_PORT', '5433')
+# DB_PORT = os.getenv('DB_PORT', '5433')
+DB_PORT = '5432'
 
 
 def execute_update(sql_query, params=None):
