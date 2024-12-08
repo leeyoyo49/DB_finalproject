@@ -1,8 +1,10 @@
 import psycopg2
 import logging
+import os
 
 # PostgreSQL connection setup
-DB_PASSWORD = ''  # Replace with your actual PostgreSQL password
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+#Replace with your actual PostgreSQL password
 DB_NAME = 'final proposal'  # Replace with your actual database name
 DB_USER = 'postgres'  # PostgreSQL user
 DB_HOST = 'localhost'  # Host address

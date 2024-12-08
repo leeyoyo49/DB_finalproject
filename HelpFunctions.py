@@ -125,8 +125,13 @@ def update_alumni(alumni_id, data):
     Constructs the SQL query to update alumni and executes it.
 
     Args:
-        alumni_id (int): The ID of the alumni to update.
-        data (dict): Dictionary of column-value pairs to update.
+        - first_name (str): The first name of the alumni. (Required)
+        - last_name (str): The last name of the alumni. (Required)
+        - sex (str): The gender of the alumni (e.g., 'M', 'F'). (Required)
+        - address (str): The address of the alumni. (Required)
+        - graduation_year (int): The year the alumni graduated. (Required)
+        - user_id (int): The user ID associated with the alumni. (Required)
+        - phone (str): The contact phone number of the alumni. (Required)
 
     Returns:
         str: Update status message.
@@ -156,57 +161,90 @@ def update_alumni(alumni_id, data):
 
 def delete_alumni(alumni_id):
     """
-    Deletes an alumni record.
+    Deletes an alumni record from the database.
 
     Args:
-        alumni_id (int): Alumni ID.
+        alumni_id (int): The unique ID of the alumni to delete. (Required)
 
     Returns:
-        str: Success or error message.
+        str: A success message if the deletion is successful,
+             or an error message if something goes wrong.
     """
     try:
+        # SQL query to delete the alumni record
         sql_query = "DELETE FROM alumni WHERE alumni_id = %s"
-        execute_query(sql_query, {"alumni_id": alumni_id})
-        return "Alumni deleted successfully."
+
+        # Execute the query with the alumni_id as a parameter
+        rows_affected = execute_update(sql_query, (alumni_id,))
+
+        # Check if any row was deleted
+        if rows_affected > 0:
+            return "Alumni deleted successfully."
+        else:
+            return "No alumni found with the given ID."
+
     except Exception as e:
+        logging.error("Error deleting alumni", exc_info=True)
         return f"Error: {str(e)}"
 
-# Data Queries Functions
+
 def find_alumni_by_name(name):
     """
-    Finds alumni by name.
+    Finds alumni by their first or last name.
 
     Args:
-        name (str): Name to search for.
+        name (str): Name or partial name to search for.
 
     Returns:
-        dict: Alumni list or error message.
+        dict: A dictionary containing:
+            - 'status' (str): 'success' or 'error'.
+            - 'alumni_list' (list): List of alumni records as dictionaries (on success).
+            - 'message' (str): Error message (on failure).
     """
     try:
-        sql_query = "SELECT * FROM alumni WHERE first_name LIKE %s OR last_name LIKE %s"
-        columns, results = query(con, sql_query, (f"%{name}%", f"%{name}%"))
+        # SQL query with parameterized LIKE clauses
+        sql_query = "SELECT * FROM alumni WHERE first_name ILIKE %s OR last_name ILIKE %s"
+        
+        # Execute the query with the search pattern
+        columns, results = query(sql_query, (f"%{name}%", f"%{name}%"))
+        
+        # Convert the query results to a list of dictionaries
         alumni_list = [dict(zip(columns, row)) for row in results]
+        
         return {"status": "success", "alumni_list": alumni_list}
     except Exception as e:
+        logging.error("Error finding alumni by name", exc_info=True)
         return {"status": "error", "message": str(e)}
+
 
 def get_alumni_by_graduation_year(year):
     """
-    Gets alumni by graduation year.
+    Retrieves alumni by their graduation year.
 
     Args:
-        year (int): Graduation year.
+        year (int): The graduation year to filter by.
 
     Returns:
-        dict: Alumni list or error message.
+        dict: A dictionary containing:
+            - 'status' (str): 'success' or 'error'.
+            - 'alumni_list' (list): List of alumni records as dictionaries (on success).
+            - 'message' (str): Error message (on failure).
     """
     try:
+        # SQL query to filter alumni by graduation year
         sql_query = "SELECT * FROM alumni WHERE graduation_year = %s"
-        columns, results = query(con, sql_query, (year,))
+        
+        # Execute the query with the year parameter
+        columns, results = query(sql_query, (year,))
+        
+        # Convert the query results to a list of dictionaries
         alumni_list = [dict(zip(columns, row)) for row in results]
+        
         return {"status": "success", "alumni_list": alumni_list}
     except Exception as e:
+        logging.error("Error retrieving alumni by graduation year", exc_info=True)
         return {"status": "error", "message": str(e)}
+
 
 def list_alumni():
     """
