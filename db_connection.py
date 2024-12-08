@@ -1,85 +1,96 @@
-import pandas as pd
-import duckdb
 import psycopg2
-from sqlalchemy import create_engine
-
+import logging
 
 # PostgreSQL connection setup
-DB_PASSWORD = '0418'  # Replace with your actual PostgreSQL password
-# DB_PASSWORD = ''  # Replace with your actual PostgreSQL password
-DB_NAME = 'final proposal'     # Replace with your actual database name
-DB_USER = 'postgres'           # PostgreSQL user
-DB_HOST = 'localhost'          # Host address
-TABLE_NAMES = [
-    "achieve",
-    "achievement",
-    "alumni",
-    "alumni_association",
-    "association_event",
-    "career_history",
-    "degree_",
-    "donation",
-    "earned_by",
-    "event_participated_by",
-    "held_by",
-    "is_cadre",
-    "is_member",
-    "user_"
-]
+DB_PASSWORD = ''  # Replace with your actual PostgreSQL password
+DB_NAME = 'final proposal'  # Replace with your actual database name
+DB_USER = 'postgres'  # PostgreSQL user
+DB_HOST = 'localhost'  # Host address
 
 
-def connect_to_db():
+def execute_update(sql_query, params=None):
     """
-    Establishes a connection to PostgreSQL using SQLAlchemy and DuckDB.
-
-    Returns:
-        duckdb.Connection: A DuckDB connection with registered tables.
-    """
-    # Create SQLAlchemy engine for PostgreSQL jay
-    engine = create_engine(
-        f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5433/{DB_NAME}"
-    )
-
-    # yo
-    # engine = create_engine(
-    #     f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}"
-    # )
-
-    # DuckDB connection
-    con = duckdb.connect()
-
-    # Load PostgreSQL tables into DuckDB
-    for table_name in TABLE_NAMES:
-        query_str = f"SELECT * FROM {table_name}"
-        # Use the SQLAlchemy engine instead of psycopg2 connection
-        df = pd.read_sql_query(query_str, engine)
-        con.register(table_name, df)  # Register the DataFrame in DuckDB
-
-    # SQLAlchemy handles connection closing automatically, but you can explicitly dispose of it
-    engine.dispose()
-
-    return con
-
-def query(con, sql_query, params=None):
-    """
-    Execute a SQL query on the database with optional parameters.
+    Executes an UPDATE SQL query on the database.
 
     Args:
-        con (duckdb.Connection): The DuckDB connection.
-        sql_query (str): SQL query string.
-        params (tuple): Optional tuple containing query parameters.
+        sql_query (str): SQL query string with placeholders.
+        params (tuple): Parameters for the query.
 
     Returns:
-        tuple: Column names and query results.
+        int: The number of rows affected.
     """
     try:
-        if params:
-            cursor = con.execute(sql_query, params)
-        else:
-            cursor = con.execute(sql_query)
-        result = cursor.fetchall()
-        column_names = [desc[0] for desc in cursor.description]
-        return column_names, result
+        # Connect to the PostgreSQL database
+        connection = psycopg2.connect(
+            dbname=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            host=DB_HOST,
+        )
+        cursor = connection.cursor()
+
+        # Execute the query with parameters
+        cursor.execute(sql_query, params)
+
+        # Commit the changes
+        connection.commit()
+
+        # Return the number of rows affected
+        return cursor.rowcount
+
     except Exception as e:
-        print(f"Error executing query: {str(e)}")
-        return None, None
+        logging.error("Error executing update query", exc_info=True)
+        return None
+
+    finally:
+        # Ensure the connection is closed
+        if connection:
+            cursor.close()
+            connection.close()
+
+
+def query(sql_query, params=None):
+    """
+    Execute a SQL query on the database.
+
+    Args:
+        sql_query (str): SQL query string.
+        params (tuple): Parameters to substitute in the SQL query.
+
+    Returns:
+        tuple or int: For SELECT queries, returns column names and results.
+                      For non-SELECT queries, returns the number of affected rows.
+    """
+    try:
+        # Connect to the PostgreSQL database
+        connection = psycopg2.connect(
+            dbname=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            host=DB_HOST,
+        )
+
+        cursor = connection.cursor()
+
+        # Execute the SQL query with parameters
+        cursor.execute(sql_query, params)
+
+        # Fetch results if the query is a SELECT statement
+        if cursor.description:  # Indicates a query returning rows
+            column_names = [desc[0] for desc in cursor.description]
+            rows = cursor.fetchall()
+            return column_names, rows
+        else:
+            # For non-SELECT queries, commit the changes and return row count
+            connection.commit()
+            return cursor.rowcount
+
+    except Exception as e:
+        logging.error("Error executing query", exc_info=True)
+        return None
+
+    finally:
+        # Ensure the connection is closed
+        if connection:
+            cursor.close()
+            connection.close()

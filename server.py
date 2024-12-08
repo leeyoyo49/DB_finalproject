@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify
-from db_connection import connect_to_db
 from HelpFunctions import *
 
 # 初始化 Flask 應用
@@ -7,9 +6,6 @@ app = Flask(__name__)
 
 # 模擬的用戶登入狀態
 logged_in_users = {}
-
-# 建立資料庫連線
-con = connect_to_db()
 
 
 def check_permissions(username, required_role):

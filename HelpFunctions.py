@@ -1,9 +1,8 @@
 import hashlib
-from db_connection import query, connect_to_db
+from db_connection import query, execute_update
 from flask import Flask, jsonify, request, session
+import logging
 
-# Establish database connection
-con = connect_to_db()
 
 def login_user(username, password):
     """
@@ -16,45 +15,79 @@ def login_user(username, password):
     Returns:
         dict or None: A dictionary containing the user's details ('user_id', 'username', 'role') if authentication is successful, otherwise None.
     """
-    #hashed_password = hashlib.sha256(password.encode()).hexdigest()
-    sql_query = "SELECT user_id, user_name, password, role FROM user_ WHERE user_name = $1"
-    columns, results = query(con, sql_query, (username,))
-    if not results:
+    try:
+        # SQL query with parameterized placeholders
+        sql_query = "SELECT user_id, user_name, password, role FROM user_ WHERE user_name = %s"
+
+        # Execute the query with parameters
+        result = query(sql_query, (username,))
+
+        if not result or not result[1]:
+            return None  # Return None if no user is found
+
+        # Extract user details from the query result
+        _, rows = result
+        user_id, db_username, db_password, role = rows[0]
+
+        # Verify the provided password matches the stored password
+        if db_password == password:
+            return {"user_id": user_id, "username": db_username, "role": role}
+
+        return None  # Return None if authentication fails
+
+    except Exception as e:
+        logging.error("Error during user login", exc_info=True)
         return None
-    #print(results)
-    user = results[0]
-    user_id, db_username, db_password, role = user
-    #print(user_id, db_username, db_password, role)
-    if db_password == password:
-        return {"user_id": user_id, "username": db_username, "role": role}
-    return None
 
 
 
-# Alumni management functions
-# Alumni CRUD Functions
+
 def add_alumni(data):
     """
     Adds a new alumni record.
 
     Args:
         data (dict): Alumni data to insert.
+            - first_name (str): The first name of the alumni. (Required)
+            - last_name (str): The last name of the alumni. (Required)
+            - sex (str): The gender of the alumni (e.g., 'M', 'F'). (Required)
+            - address (str): The address of the alumni. (Required)
+            - graduation_year (int): The year the alumni graduated. (Required)
+            - user_id (int): The user ID associated with the alumni. (Required)
+            - phone (str): The contact phone number of the alumni. (Required)
 
     Returns:
         str: Success or error message.
     """
     try:
+        # SQL query to insert a new alumni record
         sql_query = """
             INSERT INTO alumni (first_name, last_name, sex, address, graduation_year, user_id, phone)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
-        query(con, sql_query, (
-            data['first_name'], data['last_name'], data['sex'], data['address'],
-            data['graduation_year'], data['user_id'], data['phone']
-        ))
-        return "Alumni added successfully."
+        # Extract the required fields from the data dictionary
+        params = (
+            data.get('first_name'),
+            data.get('last_name'),
+            data.get('sex'),
+            data.get('address'),
+            data.get('graduation_year'),
+            data.get('user_id'),
+            data.get('phone')
+        )
+
+        # Validate that all required fields are provided
+        if not all(params):
+            return "Error: Missing required fields."
+
+        # Execute the query
+        rows_affected = execute_update(sql_query, params)
+        return "Alumni added successfully." if rows_affected else "Failed to add alumni."
+
     except Exception as e:
+        logging.error("Error adding alumni", exc_info=True)
         return f"Error: {str(e)}"
+
 
 def get_alumni(alumni_id):
     """
@@ -70,7 +103,7 @@ def get_alumni(alumni_id):
         # SQL query to fetch alumni details
         sql_query = "SELECT * FROM alumni WHERE alumni_id = $1"
         # Execute the query with the provided alumni ID
-        columns, results = query(con, sql_query, (alumni_id,))
+        columns, results = query(sql_query, (alumni_id,))
         
         # If no results are returned, alumni ID does not exist
         if not results:
@@ -88,25 +121,37 @@ def get_alumni(alumni_id):
         return {"status": "error", "message": "An error occurred while retrieving alumni details."}
 
 def update_alumni(alumni_id, data):
+    """
+    Constructs the SQL query to update alumni and executes it.
+
+    Args:
+        alumni_id (int): The ID of the alumni to update.
+        data (dict): Dictionary of column-value pairs to update.
+
+    Returns:
+        str: Update status message.
+    """
     try:
-        
-        updates = ", ".join(f"{key} = ${i+1}" for i, key in enumerate(data.keys()))  # Construct column-value pairs with the correct index
-        print(updates)
-        sql_query = f"UPDATE alumni SET {updates} WHERE alumni_id = ${len(data)+1}"  # alumni_id should be the last placeholder
-        
-        params = tuple(data.values()) + (alumni_id,)  # Add alumni_id as the last parameter
+        # Construct the SET clause with %s placeholders
+        set_clause = ", ".join(f"{col} = %s" for col in data.keys())
 
-        # Debugging: print the SQL query and parameters to ensure correctness
-        print(f"SQL Query: {sql_query}")
+        # Construct the SQL query
+        sql_query = f"UPDATE alumni SET {set_clause} WHERE alumni_id = %s"
+
+        # Create a tuple of parameter values, appending alumni_id at the end
+        params = tuple(data.values()) + (alumni_id,)
+
+        # Debugging: Print the query and parameters
+        print(f"Constructed SQL Query: {sql_query}")
         print(f"Parameters: {params}")
-        
 
-        query(con, sql_query, params)
+        # Call the execute_update function
+        rows_affected = execute_update(sql_query, params)
 
-        return "Alumni updated successfully."
+        return f"Update successful. Rows affected: {rows_affected}" if rows_affected else "No rows updated."
 
     except Exception as e:
-        return f"Error updating alumni: {str(e)}"
+        return f"Error in update_alumni: {str(e)}"
 
 
 def delete_alumni(alumni_id):
@@ -121,7 +166,7 @@ def delete_alumni(alumni_id):
     """
     try:
         sql_query = "DELETE FROM alumni WHERE alumni_id = %s"
-        query(con, sql_query, (alumni_id,))
+        execute_query(sql_query, {"alumni_id": alumni_id})
         return "Alumni deleted successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -336,7 +381,7 @@ def assign_role(user_id, role):
         str: Success or error message.
     """
     try:
-        sql_query = "UPDATE users SET role = %s WHERE id = %s"
+        sql_query = "UPDATE users SET role = %s WHERE alumni_id = %s"
         query(con, sql_query, (role, user_id))
         return "Role assigned successfully."
     except Exception as e:
