@@ -735,7 +735,7 @@ def record_donation_endpoint(alumni_id):
         {
             "amount": 1000,
             "date": "2024-10-20",
-            "campaign_id": 1  // Optional
+            "donation_type": 'Regular'
         }
 
     Args:
@@ -762,6 +762,7 @@ def update_donation_endpoint(donation_id):
         {
             "amount": 1500,
             "date": "2024-10-25"
+            "donation_type": 'Regular'
         }
 
     Args:
@@ -873,9 +874,8 @@ def get_donation_trends_endpoint():
 
 
 # Achievement Management Endpoints
-
-@app.route('/add_achievement/<int:alumni_id>', methods=['POST'])
-def add_achievement_endpoint(alumni_id):
+@app.route('/add_achievement', methods=['POST'])
+def add_achievement_endpoint():
     """
     Adds an achievement for an alumni.
 
@@ -885,10 +885,9 @@ def add_achievement_endpoint(alumni_id):
             "description": "Awarded for publishing the best research paper of the year.",
             "date": "2024-10-15",
             "category": "Academic"
+            "alumnileader_id": "B11705048"
         }
 
-    Args:
-        alumni_id (int): ID of the alumni receiving the achievement.
 
     Returns:
         JSON with status and message.
@@ -897,20 +896,23 @@ def add_achievement_endpoint(alumni_id):
     if not achievement_data or not all(k in achievement_data for k in ['title', 'description', 'date', 'category']):
         return jsonify({"status": "error", "message": "Missing required fields"}), 400
 
-    message = add_achievement(alumni_id, achievement_data)
+    message = add_achievement(achievement_data)
     if "Error" in message:
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 201
 
-@app.route('/update_achievement/<int:achievement_id>', methods=['PUT'])
-def update_achievement_endpoint(achievement_id):
+@app.route('/update_achievement', methods=['PUT'])
+def update_achievement_endpoint():
     """
     Updates an achievement record.
 
     Input JSON:
         {
-            "title": "Outstanding Research Contribution",
-            "date": "2024-11-01"  // Optional, fields to be updated
+            "title": "Outstanding Research Contribution", // pk
+            "date": "2024-11-01"  //pk
+            'alumnileader_id': "B11705048" //pk
+            'category': "Academic" //optional
+            "description": "Awarded for outstanding research contribution." //optional
         }
 
     Args:
@@ -923,26 +925,32 @@ def update_achievement_endpoint(achievement_id):
     if not data:
         return jsonify({"status": "error", "message": "Missing data to update"}), 400
 
-    message = update_achievement(achievement_id, data)
+    message = update_achievement(data)
     if "Error" in message:
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 200
 
-@app.route('/delete_achievement/<int:achievement_id>', methods=['DELETE'])
+@app.route('/delete_achievement', methods=['DELETE'])
 def delete_achievement_endpoint(achievement_id):
     """
     Deletes an achievement record.
 
     Args:
-        achievement_id (int): ID of the achievement to delete.
-
+    Input JSON:
+        {
+            "title": "Outstanding Research Contribution", // pk
+            "date": "2024-11-01"  //pk
+            'alumnileader_id': "B11705048" //pk
+        }
     Returns:
         JSON with status and message.
     """
-    message = delete_achievement(achievement_id)
+    data = request.json
+    message = delete_achievement(data)
     if "Error" in message:
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 200
+
 
 @app.route('/get_achievement/<int:achievement_id>', methods=['GET'])
 def get_achievement_endpoint(achievement_id):
@@ -1175,8 +1183,8 @@ def create_event_endpoint(association_id):
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 201
 
-@app.route('/update_event/<int:association_id>', methods=['PUT'])
-def update_event_endpoint(event_id):
+@app.route('/update_event', methods=['PUT'])
+def update_event_endpoint():
     """
     Updates an event record, can only change the description and location.
     Since the event name and date are unique, they cannot be changed.
@@ -1199,13 +1207,13 @@ def update_event_endpoint(event_id):
     if not data:
         return jsonify({"status": "error", "message": "Missing data to update"}), 400
 
-    message = update_event(event_id, data)
+    message = update_event(data)
     if "Error" in message:
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 200
 
 @app.route('/delete_event/<int:association_id>', methods=['DELETE'])
-def delete_event_endpoint(event_id):
+def delete_event_endpoint():
     """
     Deletes an event.
 
@@ -1218,7 +1226,7 @@ def delete_event_endpoint(event_id):
         JSON with status and message.
     """
     data = request.json
-    message = delete_event(event_id, data)
+    message = delete_event(data)
     if "Error" in message:
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 200
@@ -1240,155 +1248,150 @@ def list_events_by_association_endpoint(association_id):
     return jsonify(events), 200
 
 # Data Analysis Endpoints
-@app.route('/get_alumni_employment_trends', methods=['GET'])
-def get_alumni_employment_trends_endpoint():
-    """
-    Retrieves alumni employment trends for a specific department over a year range.
+# @app.route('/get_alumni_employment_trends', methods=['GET'])
+# def get_alumni_employment_trends_endpoint():
+#     """
+#     Retrieves alumni employment trends for a specific department over a year range.
 
-    Query Parameters:
-        - department (str): Department name (e.g., "Computer Science").
-        - start_year (int): Start year (e.g., "2010").
-        - end_year (int): End year (e.g., "2020").
+#     Query Parameters:
+#         - department (str): Department name (e.g., "Computer Science").
+#         - start_year (int): Start year (e.g., "2010").
+#         - end_year (int): End year (e.g., "2020").
 
-    Example URL:
-        /get_alumni_employment_trends?department=Computer%20Science&start_year=2010&end_year=2020
+#     Example URL:
+#         /get_alumni_employment_trends?department=Computer%20Science&start_year=2010&end_year=2020
 
-    Returns:
-        JSON with employment trends data.
-    """
-    department = request.args.get('department')
-    start_year = request.args.get('start_year', type=int)
-    end_year = request.args.get('end_year', type=int)
+#     Returns:
+#         JSON with employment trends data.
+#     """
+#     department = request.args.get('department')
+#     start_year = request.args.get('start_year', type=int)
+#     end_year = request.args.get('end_year', type=int)
 
-    if not department or not start_year or not end_year:
-        return jsonify({"status": "error", "message": "Missing required parameters"}), 400
+#     if not department or not start_year or not end_year:
+#         return jsonify({"status": "error", "message": "Missing required parameters"}), 400
 
-    trends = get_alumni_employment_trends(department, (start_year, end_year))
-    return jsonify(trends), 200
-
-
-@app.route('/calculate_donation_correlations', methods=['GET'])
-def calculate_donation_correlations_endpoint():
-    """
-    Calculates correlations between alumni demographics and donation amounts.
-
-    Returns:
-        JSON with donation correlations.
-    """
-    correlations = calculate_donation_correlations()
-    return jsonify(correlations), 200
-
-@app.route('/generate_30_year_reunion_list', methods=['GET'])
-def generate_30_year_reunion_list_endpoint():
-    """
-    Generates a list of alumni who graduated 30 years ago.
-
-    Returns:
-        JSON with reunion list.
-    """
-    reunion_list = generate_30_year_reunion_list()
-    return jsonify(reunion_list), 200
+#     trends = get_alumni_employment_trends(department, (start_year, end_year))
+#     return jsonify(trends), 200
 
 
-@app.route('/get_top_achievers', methods=['GET'])
-def get_top_achievers_endpoint():
-    """
-    Retrieves the top achievers.
+# @app.route('/calculate_donation_correlations', methods=['GET'])
+# def calculate_donation_correlations_endpoint():
+#     """
+#     Calculates correlations between alumni demographics and donation amounts.
 
-    Query Parameters:
-        - limit (int): Number of top achievers to retrieve (e.g., 5).
+#     Returns:
+#         JSON with donation correlations.
+#     """
+#     correlations = calculate_donation_correlations()
+#     return jsonify(correlations), 200
 
-    Example URL:
-        /get_top_achievers?limit=5
+# @app.route('/generate_30_year_reunion_list', methods=['GET'])
+# def generate_30_year_reunion_list_endpoint():
+#     """
+#     Generates a list of alumni who graduated 30 years ago.
 
-    Returns:
-        JSON with list of top achievers.
-    """
-    limit = request.args.get('limit', default=10, type=int)
-    top_achievers = get_top_achievers(limit)
-    return jsonify(top_achievers), 200
+#     Returns:
+#         JSON with reunion list.
+#     """
+#     reunion_list = generate_30_year_reunion_list()
+#     return jsonify(reunion_list), 200
 
-@app.route('/get_event_participation_statistics/<int:event_id>', methods=['GET'])
-def get_event_participation_statistics_endpoint(event_id):
-    """
-    Retrieves participation statistics for a specific event.
 
-    Args:
-        event_id (int): ID of the event.
+# @app.route('/get_top_achievers', methods=['GET'])
+# def get_top_achievers_endpoint():
+#     """
+#     Retrieves the top achievers.
 
-    Returns:
-        JSON with participation statistics.
-    """
-    participation_stats = get_event_participation_statistics(event_id)
-    if participation_stats["status"] == "error":
-        return jsonify(participation_stats), 404
-    return jsonify(participation_stats), 200
+#     Query Parameters:
+#         - limit (int): Number of top achievers to retrieve (e.g., 5).
+
+#     Example URL:
+#         /get_top_achievers?limit=5
+
+#     Returns:
+#         JSON with list of top achievers.
+#     """
+#     limit = request.args.get('limit', default=10, type=int)
+#     top_achievers = get_top_achievers(limit)
+#     return jsonify(top_achievers), 200
 
 
 # Event Participation Endpoints
-
-@app.route('/add_event_participant/<int:event_id>/<int:alumni_id>', methods=['POST'])
-def add_event_participant_endpoint(event_id, alumni_id):
+@app.route('/add_event_participant', methods=['POST'])
+def add_event_participant_endpoint():
     """
     Adds a participant to an event.
-
-    Args:
-        alumni_id (int): Alumni ID.
-        event_id (int): Event ID.
-
+    JSON:
+        {
+            "alumni_id": 1,
+            "event_name": "Annual Networking Event",
+            "date": "2024-05-15"
+        }
     Returns:
         JSON with status and message.
     """
-    message = add_event_participant(alumni_id, event_id)
+    data = request.json
+    message = add_event_participant(data)
     if "Error" in message:
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 201
 
-@app.route('/remove_event_participant/<int:event_id>/<int:alumni_id>', methods=['DELETE'])
-def remove_event_participant_endpoint(event_id, alumni_id):
+@app.route('/remove_event_participant', methods=['DELETE'])
+def remove_event_participant_endpoint():
     """
-    Removes a participant from an event.
+    Adds a participant to an event.
 
-    Args:
-        alumni_id (int): Alumni ID.
-        event_id (int): Event ID.
+    JSON:
+        {
+            "alumni_id": 1,
+            "event_name": "Annual Networking Event",
+            "date": "2024-05-15"
+        }
 
     Returns:
         JSON with status and message.
     """
-    message = remove_event_participant(alumni_id, event_id)
+    data = request.json
+    message = remove_event_participant(data)
     if "Error" in message:
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 200
 
-@app.route('/list_participants/<int:event_id>', methods=['GET'])
-def list_participants_endpoint(event_id):
+@app.route('/list_participants', methods=['GET'])
+def list_participants_endpoint(data):
     """
     Lists all participants for a specific event.
-
-    Args:
-        event_id (int): Event ID.
+    
+    JSON:   
+        {
+            "event_name": 1,
+            "date": "2024-05-15",
+        }
 
     Returns:
         JSON with list of participants.
     """
-    participants = list_participants(event_id)
+    data = request.json
+    participants = list_participants(data)
     if participants["status"] == "error":
         return jsonify(participants), 404
     return jsonify(participants), 200
 
-@app.route('/get_participation_by_alumni/<string:alumni_id>', methods=['GET'])
-def get_participation_by_alumni_endpoint(alumni_id):
+@app.route('/get_participation_by_alumni', methods=['GET'])
+def get_participation_by_alumni_endpoint():
     """
     Retrieves all events an alumni has participated in.
 
-    Args:
-        alumni_id (int): Alumni ID.
-
+    JSON:
+        {
+            "alumni_id": 1
+        }
     Returns:
         JSON with list of events.
     """
-    events = get_participation_by_alumni(alumni_id)
+    data = request.json
+    events = get_participation_by_alumni(data)
     if events["status"] == "error":
         return jsonify(events), 404
     return jsonify(events), 200
