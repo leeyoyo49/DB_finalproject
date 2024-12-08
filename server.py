@@ -71,6 +71,7 @@ def login():
             "user_id": user["user_id"],
             "role": user["role"]
         }
+        print("logged_in_users:", logged_in_users)
         return jsonify({
             "status": "success",
             "user_id": user["user_id"],
@@ -405,13 +406,13 @@ def add_alumni_endpoint():
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 201
 
-@app.route('/get_alumni/<int:alumni_id>', methods=['GET'])
+@app.route('/get_alumni/<string:alumni_id>', methods=['GET'])
 def get_alumni_endpoint(alumni_id):
     """
     Retrieves alumni details.
 
     Args:
-        alumni_id (int): ID of the alumni to retrieve.
+        alumni_id (string): ID of the alumni to retrieve.
 
     Returns:
         JSON with alumni details.
@@ -421,14 +422,14 @@ def get_alumni_endpoint(alumni_id):
         return jsonify(alumni_details), 404
     return jsonify(alumni_details), 200
 
-@app.route('/update_alumni/<int:alumni_id>', methods=['PUT'])
+@app.route('/update_alumni/<string:alumni_id>', methods=['PUT'])
 def update_alumni_endpoint(alumni_id):
     """
     Updates an alumni record.
 
     Input JSON:
         {
-            "address": "456 Elm St, City, Country",  // Optional fields to update
+            "address": "456 Elm St, City, Country",
             "phone": "0987654321"
         }
 
@@ -439,6 +440,7 @@ def update_alumni_endpoint(alumni_id):
         JSON with status and message.
     """
     data = request.json
+    print(data)
     if not data:
         return jsonify({"status": "error", "message": "Missing data to update"}), 400
 

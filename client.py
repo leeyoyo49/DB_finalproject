@@ -3,6 +3,7 @@
 # and perform various operations such as adding, deleting, updating, and searching for alumni
 
 import requests
+import json
 import sys
 
 BASE_URL = "http://localhost:5001"
@@ -60,25 +61,159 @@ def login():
         print(f"Request error: {e}")
         return -1, -1, -1
     
+def get_alumni(alumni_id):
+    """
+    Fetches alumni details from the server.
+
+    Args:
+        alumni_id (string): ID of the alumni to retrieve.
+
+    Returns:
+        dict: The response JSON containing alumni details or error message.
+    """
+    try:
+        # Construct the request URL
+        url = f"{BASE_URL}/get_alumni/{alumni_id}"
+        
+        # Send a GET request to the server
+        response = requests.get(url)
+        
+        # Check the status code and handle response
+        if response.status_code == 200:
+            print("Alumni details retrieved successfully:")
+            return response.json()
+        elif response.status_code == 404:
+            print("Alumni not found.")
+            return response.json()
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return {"status": "error", "message": "Unexpected error occurred."}
+    except requests.RequestException as e:
+        # Handle any request exceptions (e.g., network issues)
+        print("Error while fetching alumni details:", e)
+        return {"status": "error", "message": str(e)}
+    
+def edit_profile(alumni_id):
+    """
+    Function to edit the alumni profile.
+    It sends a PUT request to the server to update alumni details.
+    
+    Args:
+        alumni_id (str): The alumni ID for the profile to update.
+    """
+    print("\n=== Edit Profile ===")
+    print("Enter the information you want to update. Leave blank to skip.")
+    
+    # Collecting user input for profile fields
+    address = input("Enter new address (leave blank to skip): ")
+    phone = input("Enter new phone number (leave blank to skip): ")
+
+    # Prepare the data dictionary, only including the fields that were changed
+    data = {}
+    if address:
+        data["address"] = address
+    if phone:
+        data["phone"] = phone
+
+    # If no fields are provided, inform the user
+    if not data:
+        print("No changes made. Exiting profile editing.")
+        return
+
+    # Send the PUT request to the server
+    try:
+        response = requests.put(f"{BASE_URL}/update_alumni/{alumni_id}", json=data)
+        if response.status_code == 200:
+            print("Profile updated successfully!")
+        else:
+            print(f"Failed to update profile: {response.json()['message']}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error during request: {e}")
+    
 def alumni_operations():
     global ROLE, USER_ID, USER_NAME, ALUMNI_ID
     """Alumni-specific operations."""
-    print("\n=== Select the section you want to enter ===")
-    print("1. Profile")
-    print("2. Career")
-    print("3. Achievements")
-    print("4. Donation")
-    print("5. Alumni Association")
-    print("6. Exit")
-    print("============================================")
-    choice = input("Enter your choice: ")
-    
-    if choice == "1":
-        endpoint = f"{BASE_URL}/get_user_details/{USER_ID}"
-        # Make the request - let the browser handle the session cookies automatically
-        response = requests.get(endpoint, cookies=requests.cookies.get_dict())  # The browser will handle session cookies automatically
-        print(response.json())
-    # Let the user choose an operation  
+    while True:
+        print("\n=== Select the section you want to enter ===")
+        print("1. Profile")
+        print("2. Career")
+        print("3. Achievements")
+        print("4. Donation")
+        print("5. Alumni Association")
+        print("6. Exit")
+        print("============================================")
+        
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            print("\n=== Profile ===")
+            print("1. View Profile")
+            print("2. Edit Profile")
+            sub_choice = input("Enter your choice: ")
+
+            if sub_choice == "1":
+                print("\n=== View Profile ===")
+                alumni_details = get_alumni(ALUMNI_ID)
+                if alumni_details["status"] == "error":
+                    print(f"Error: {alumni_details['message']}")
+                else:
+                    alumni_info = alumni_details['alumni_details']
+                    
+                    # 先打印 First Name 和 Last Name
+                    if "first_name" in alumni_info:
+                        first_name = alumni_info["first_name"]
+                        print(f"First Name: {first_name}")
+                    
+                    if "last_name" in alumni_info:
+                        last_name = alumni_info["last_name"]
+                        print(f"Last Name: {last_name}")
+                    
+                    # 打印其他信息
+                    for key, value in alumni_info.items():
+                        if key not in ["first_name", "last_name", "graduation_year"]:
+                            key_print = key.replace('_', ' ').capitalize()
+                            if key_print == "Alumni id":
+                                key_print = "Alumni ID (User Name)"
+                            print(f"{key_print}: {value}")
+            
+            elif sub_choice == "2":
+                print("\n=== Edit Profile ===")
+                edit_profile(ALUMNI_ID)
+
+        elif choice == "2":
+            print("\n=== Career ===")
+            print("1. View Career")
+            print("2. Edit Career")
+            sub_choice = input("Enter your choice: ")
+
+            if sub_choice == "1":
+                print("\n=== View Career ===")
+                # 這裡可以實現查看事業資料功能
+                print("View Career functionality is under construction.")
+            
+            elif sub_choice == "2":
+                print("\n=== Edit Career ===")
+                # 這裡可以實現編輯事業資料功能
+                print("Edit Career functionality is under construction.")
+
+        elif choice == "3":
+            print("\n=== Achievements ===")
+            print("Achievements functionality is under construction.")
+
+        elif choice == "4":
+            print("\n=== Donation ===")
+            print("Donation functionality is under construction.")
+
+        elif choice == "5":
+            print("\n=== Alumni Association ===")
+            print("Alumni Association functionality is under construction.")
+
+        elif choice == "6":
+            print("Exiting alumni operations.")
+            break  # 退出循環，結束操作
+
+        else:
+            print("Invalid choice, please try again.")
     
 def admin_operations():
     global ROLE, USER_ID, USER_NAME, ALUMNI_ID
@@ -113,6 +248,7 @@ def main():
                 ROLE = role
                 USER_ID = user_id
                 USER_NAME = user_name
+                ALUMNI_ID = user_name
                 alumni_operations()
             else:  # Incorrect role for this option
                 print("Invalid role. Please try again.")

@@ -17,14 +17,14 @@ def login_user(username, password):
         dict or None: A dictionary containing the user's details ('user_id', 'username', 'role') if authentication is successful, otherwise None.
     """
     #hashed_password = hashlib.sha256(password.encode()).hexdigest()
-    sql_query = "SELECT user_id, user_name, password, role FROM users_ WHERE username = %s"
+    sql_query = "SELECT user_id, user_name, password, role FROM user_ WHERE user_name = $1"
     columns, results = query(con, sql_query, (username,))
     if not results:
         return None
-    print(results)
+    #print(results)
     user = results[0]
     user_id, db_username, db_password, role = user
-    print(user_id, db_username, db_password, role)
+    #print(user_id, db_username, db_password, role)
     if db_password == password:
         return {"user_id": user_id, "username": db_username, "role": role}
     return None
@@ -67,34 +67,51 @@ def get_alumni(alumni_id):
         dict: Alumni details or error message.
     """
     try:
-        sql_query = "SELECT * FROM alumni WHERE alumni_id = %s"
+        # SQL query to fetch alumni details
+        sql_query = "SELECT * FROM alumni WHERE alumni_id = $1"
+        # Execute the query with the provided alumni ID
         columns, results = query(con, sql_query, (alumni_id,))
+        
+        # If no results are returned, alumni ID does not exist
         if not results:
             return {"status": "error", "message": "Alumni not found"}
-
+        
+        # Map the result to column names to create a dictionary
         alumni_details = dict(zip(columns, results[0]))
+        
+        # Return success response with alumni details
         return {"status": "success", "alumni_details": alumni_details}
+    
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        # Return error response with exception message
+        # Consider logging the error instead of returning full details in production
+        return {"status": "error", "message": "An error occurred while retrieving alumni details."}
 
 def update_alumni(alumni_id, data):
-    """
-    Updates an alumni record.
-
-    Args:
-        alumni_id (int): Alumni ID.
-        data (dict): Alumni data to update.
-
-    Returns:
-        str: Success or error message.
-    """
     try:
-        updates = ", ".join(f"{key} = %s" for key in data.keys())
-        sql_query = f"UPDATE alumni SET {updates} WHERE alumni_id = %s"
-        query(con, sql_query, (*data.values(), alumni_id))
+        updates = ", ".join(f"{key} = ${i+1}" for i, key in enumerate(data.keys()))  # Construct column-value pairs with the correct index
+        
+        sql_query = f"UPDATE alumni SET {updates} WHERE alumni_id = ${len(data)+1}"  # alumni_id should be the last placeholder
+        
+        params = tuple(data.values()) + (alumni_id,)  # Add alumni_id as the last parameter
+
+        # Debugging: print the SQL query and parameters to ensure correctness
+        print(f"SQL Query: {sql_query}")
+        print(f"Parameters: {params}")
+        
+
+        # Execute the query with the parameters
+        with con.cursor() as cursor:
+            cursor.execute(sql_query, params)
+
+        # Commit the transaction
+        con.commit()
+
         return "Alumni updated successfully."
+
     except Exception as e:
-        return f"Error: {str(e)}"
+        return f"Error updating alumni: {str(e)}"
+
 
 def delete_alumni(alumni_id):
     """
