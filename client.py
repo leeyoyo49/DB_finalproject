@@ -14,7 +14,7 @@ USER_NAME = None
 ALUMNI_ID = None
 
 def display_main_menu():
-    global ROLE, USER_ID, USER, ALUMNI_ID
+    global ROLE, USER_ID, USER_NAME, ALUMNI_ID
     """Display the main menu."""
     print("\n=== University Alumni Tracking System ===")
     print("1. Login as Alumni")
@@ -24,7 +24,7 @@ def display_main_menu():
     print("=========================================")
     
 def register():
-    global ROLE, USER_ID, USER, ALUMNI_ID
+    global ROLE, USER_ID, USER_NAME, ALUMNI_ID
     """Register a new user."""
     print("\n=== Register ===")
     username = input("Enter username: ")
@@ -37,7 +37,7 @@ def register():
     
 def login():
     """Login to the system."""
-    global ROLE, USER_ID, USER, ALUMNI_ID
+    global ROLE, USER_ID, USER_NAME, ALUMNI_ID
     print("\n=== Login ===")
     
     username = input("Enter username: ")
@@ -61,7 +61,7 @@ def login():
         return -1, -1, -1
     
 def alumni_operations():
-    global ROLE, USER_ID, USER, ALUMNI_ID
+    global ROLE, USER_ID, USER_NAME, ALUMNI_ID
     """Alumni-specific operations."""
     print("\n=== Select the section you want to enter ===")
     print("1. Profile")
@@ -81,65 +81,80 @@ def alumni_operations():
     # Let the user choose an operation  
     
 def admin_operations():
-    global ROLE, USER_ID, USER, ALUMNI_ID
+    global ROLE, USER_ID, USER_NAME, ALUMNI_ID
     """Admin-specific operations."""
     print("\nAdmin operations can be implemented here.")
     
 def analyst_operations():
-    global ROLE, USER_ID, USER, ALUMNI_ID
+    global ROLE, USER_ID, USER_NAME, ALUMNI_ID
     """Analyst-specific operations."""
     print("\nAnalyst operations can be implemented here.")
     
 def main():
-    global ROLE, USER_ID, USER, ALUMNI_ID
+    """
+    Main function to manage user login and role-specific operations.
+    """
+    global ROLE, USER_ID, USER_NAME, ALUMNI_ID
+
     while True:
+        # Display the main menu
         display_main_menu()
-        choice = input("Loggin as: ")
-        if choice == "1":
+        
+        # Prompt the user to select an option
+        choice = input("Login as (1: Alumni, 2: Admin, 3: Analyst, 0: Exit): ").strip()
+        
+        if choice == "1":  # Alumni login
             role, user_id, user_name = login()
-            if role == -1:
+            if role == -1:  # Login failed
                 print("Invalid credentials. Please try again.")
                 continue
-            else:
-                if role == "Alumni":
-                    print("Login successful.")
-                    ROLE = role
-                    USER_ID = user_id
-                    USER_NAME = user_name
-                    alumni_operations()
-                else:
-                    print("Invalid role. Please try again.")
-                    continue
-        elif choice == "2":
+            elif role == "Alumni":  # Valid Alumni login
+                print("Login successful.")
+                ROLE = role
+                USER_ID = user_id
+                USER_NAME = user_name
+                alumni_operations()
+            else:  # Incorrect role for this option
+                print("Invalid role. Please try again.")
+                continue
+
+        elif choice == "2":  # Admin login
             role, user_id, user_name = login()
-            if role == -1:
+            if role == -1:  # Login failed
                 print("Invalid credentials. Please try again.")
                 continue
-            else:
-                if role == "Admin":
-                    print("Login successful.")
-                    ROLE = role
-                    USER_ID = user_id
-                    USER_NAME = user_name
-                    admin_operations()
-                else:
-                    print("Invalid role. Please try again.")
-                    continue
-        elif choice == "3":
+            elif role == "Admin":  # Valid Admin login
+                print("Login successful.")
+                ROLE = role
+                USER_ID = user_id
+                USER_NAME = user_name
+                admin_operations()
+            else:  # Incorrect role for this option
+                print("Invalid role. Please try again.")
+                continue
+
+        elif choice == "3":  # Analyst login
             role, user_id, user_name = login()
-            if role == -1:
+            if role == -1:  # Login failed
                 print("Invalid credentials. Please try again.")
                 continue
-            else:
-                if role == "Analyst":
-                    print("Login successful.")
-                    ROLE = role
-                    USER_ID = user_id
-                    USER_NAME = user_name
-                    analyst_operations()
-                else:
-                    print("Invalid role. Please try again.")
-                    continue
+            elif role == "Analyst":  # Valid Analyst login
+                print("Login successful.")
+                ROLE = role
+                USER_ID = user_id
+                USER_NAME = user_name
+                analyst_operations()
+            else:  # Incorrect role for this option
+                print("Invalid role. Please try again.")
+                continue
+
+        elif choice == "0":  # Exit the program
+            print("Exiting the program. Goodbye!")
+            break
+
+        else:  # Handle invalid input
+            print("Invalid choice. Please select a valid option.")
+            continue
 
 if __name__ == "__main__":
     main()
