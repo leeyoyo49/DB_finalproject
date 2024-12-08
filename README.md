@@ -1,21 +1,23 @@
 # 各角色擁有的權限
 
 ## 一般使用者 (alumni)
-* 更新 個人資料(職業歷程、電話)
-* 查看 個人學位
+* 更新 個人資料 ok
+* 查看 個人學位 ok
 * 查看 已報名參加校友會舉辦的活動
 * 查看 成就和捐贈
-* 參加 校友會：
+* 查看 參加的校友會
+  
 ## 業務經營者 (alumni association)
-* 新增 donation 紀錄 (for association)
 * 新增 活動 (association event)
 * 更新 幹部名單
 * 新增 校友會成員
 * 刪除 校友會成員
+  
 ## 資料分析師 (data analytics)
 * 薪資分析
 * 校友捐款分析
 * 計算三十重聚的學長姐名單
+  
 ## 網站管理者 (NTU alumni center)
 * 新增 donation 紀錄 (for school)
 * 新增 畢業生帳號 (初次登入 -> 帳號：學號，密碼：0000)

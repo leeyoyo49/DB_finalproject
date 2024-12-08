@@ -296,6 +296,23 @@ def get_user_details_endpoint(user_id):
         return jsonify(user_details), 404
     return jsonify(user_details), 200
 
+@app.route('/get_degree/<string:alumni_id>', methods=['GET'])
+def get_degree_endpoint(alumni_id):
+    """
+    Retrieves the degree of an alumni.
+
+    Input:
+        alumni_id (String): The unique ID of the alumni.
+    
+    Output:
+        JSON with degree details.
+    """
+    degree = get_degree(alumni_id)
+    if degree["status"] == "error":
+        return jsonify(degree), 404  # 返回狀態碼404及錯誤信息
+    return jsonify(degree), 200  # 返回狀態碼200及學歷詳細信息
+
+
 @app.route('/assign_role/<int:user_id>', methods=['PUT'])
 def assign_role_endpoint(user_id):
     """
@@ -569,7 +586,7 @@ def get_alumni_achievements_endpoint(alumni_id):
 
 
 # Career History Management Endpoints
-@app.route('/add_career_history/<int:alumni_id>', methods=['POST'])
+@app.route('/add_career_history/<string:alumni_id>', methods=['POST'])
 def add_career_history_endpoint(alumni_id):
     """
     Adds a career history record for an alumni.
@@ -581,6 +598,7 @@ def add_career_history_endpoint(alumni_id):
             "start_date": "2020-01-15",
             "end_date": "2023-05-30",  # Optional
             "monthly_salary": 5000  # Optional
+            "job_description": "Developed software applications."  # Optional
         }
 
     Args:
@@ -690,7 +708,7 @@ def get_salary_trends_endpoint():
     salary_trends = get_salary_trends(department, year_range)
     return jsonify(salary_trends), 200
 
-@app.route('/get_career_paths/<int:alumni_id>', methods=['GET'])
+@app.route('/get_career_paths/<string:alumni_id>', methods=['GET'])
 def get_career_paths_endpoint(alumni_id):
     """
     Retrieves the career paths of an alumni.
@@ -1116,7 +1134,6 @@ def list_association_members_endpoint(association_id):
     return jsonify(members), 200
 
 # Event Management Endpoints
-
 @app.route('/create_event/<int:association_id>', methods=['POST'])
 def create_event_endpoint(association_id):
     """
@@ -1262,6 +1279,7 @@ def generate_30_year_reunion_list_endpoint():
     """
     reunion_list = generate_30_year_reunion_list()
     return jsonify(reunion_list), 200
+
 
 @app.route('/get_top_achievers', methods=['GET'])
 def get_top_achievers_endpoint():

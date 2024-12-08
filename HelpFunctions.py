@@ -337,6 +337,34 @@ def get_alumni_donations(alumni_id):
         logging.error("Error retrieving alumni donations", exc_info=True)
         return {"status": "error", "message": str(e)}
 
+def get_degree(Alumni_ID):
+    """
+    Retrieves the degree details of an alumni.
+
+    Args:
+        Alumni_ID (int): The unique ID of the alumni.
+
+    Returns:
+        dict: A dictionary containing:
+            - 'status' (str): 'success' or 'error'.
+            - 'degree' (dict): Degree details as a dictionary (on success).
+            - 'message' (str): Error message (on failure).
+    """
+    try:
+        # SQL query to retrieve degree details for a specific alumni
+        sql_query = "SELECT * FROM earned_by JOIN degree_ ON earned_by.degree_id = degree_.degree_id WHERE alumni_id = %s"
+
+        # Execute the query
+        columns, results = query(sql_query, (Alumni_ID,))
+
+        # Convert results to a dictionary
+        degree = dict(zip(columns, results[0]) if results else {})
+
+        return {"status": "success", "degree": degree}
+    except Exception as e:
+        logging.error("Error retrieving alumni degree", exc_info=True)
+        return {"status": "error", "message": str(e)}
+
 def get_alumni_achievements(alumni_id):
     """
     Retrieves a list of achievements for a specific alumni.
@@ -503,12 +531,12 @@ def add_career_history(alumni_id, career_data):
     """
     try:
         sql_query = """
-            INSERT INTO career_history (job_title, company, start_date, end_date, monthly_salary, alumni_id)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO career_history (job_title, company, start_date, end_date, monthly_salary, job_description, alumni_id)
+            VALUES (%s, %s, %s, %s, %s,%s, %s)
         """
         query(sql_query, (
             career_data['job_title'], career_data['company'], career_data['start_date'],
-            career_data.get('end_date'), career_data.get('monthly_salary'), alumni_id
+            career_data.get('end_date'),career_data.get('monthly_salary'), career_data.get('job_description'), alumni_id
         ))
         return "Career history added successfully."
     except Exception as e:
@@ -609,7 +637,7 @@ def get_career_paths(alumni_id):
     """
     try:
         sql_query = """
-            SELECT job_title, company, start_date, end_date
+            SELECT *
             FROM career_history
             WHERE alumni_id = %s
             ORDER BY start_date ASC

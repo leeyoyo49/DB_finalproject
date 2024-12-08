@@ -92,6 +92,40 @@ def get_alumni(alumni_id):
         # Handle any request exceptions (e.g., network issues)
         print("Error while fetching alumni details:", e)
         return {"status": "error", "message": str(e)}
+
+def get_career(alumni_id):
+    """
+    Fetches alumni career path from the server.
+
+    Args:
+        alumni_id (string): ID of the alumni to retrieve.
+
+    Returns:
+        dict: The response JSON containing alumni career details or error message.
+    """
+    try:
+        # Construct the request URL
+        url = f"{BASE_URL}/get_career_paths/{alumni_id}"
+        
+        
+        # Send a GET request to the server
+        response = requests.get(url)
+        
+        # Check the status code and handle response
+        if response.status_code == 200:
+            print("Alumni career path retrieved successfully:")
+            return response.json()
+        elif response.status_code == 404:
+            print("Alumni not found.")
+            return response.json()
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return {"status": "error", "message": "Unexpected error occurred."}
+    except requests.RequestException as e:
+        # Handle any request exceptions (e.g., network issues)
+        print("Error while fetching alumni career path:", e)
+        return {"status": "error", "message": str(e)}
+
     
 def edit_profile(alumni_id):
     """
@@ -127,6 +161,73 @@ def edit_profile(alumni_id):
             print("Profile updated successfully!")
         else:
             print(f"Failed to update profile: {response.json()['message']}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error during request: {e}")
+        
+import requests
+
+def get_degree(alumni_id):
+    """
+    Fetches alumni degree information from the server.
+
+    Args:
+        alumni_id (string): ID of the alumni to retrieve.
+
+    Returns:
+        dict: The response JSON containing alumni degree details or error message.
+    """
+    try:
+        # Construct the request URL
+        url = f"{BASE_URL}/get_degree/{alumni_id}"
+        
+        # Send a GET request to the server
+        response = requests.get(url)
+        
+        # Check the status code and handle response
+        if response.status_code == 200:
+            print("Alumni degree details retrieved successfully:")
+            return response.json()
+        elif response.status_code == 404:
+            print("Alumni not found.")
+            return response.json()
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return {"status": "error", "message": "Unexpected error occurred."}
+    except requests.RequestException as e:
+        # Handle any request exceptions (e.g., network issues)
+        print("Error while fetching alumni degree details:", e)
+        return {"status": "error", "message": str(e)}
+
+def add_job(alumni_id):
+    """
+    Interacts with the server to add a career history record for the given alumni.
+
+    Args:
+        alumni_id (str): Alumni ID.
+    """
+    job_title = input("Enter job title: ")
+    company = input("Enter company name: ")
+    start_date = input("Enter start date (YYYY-MM-DD): ")
+    end_date = input("Enter end date (Optional, YYYY-MM-DD) or press Enter to skip: ")
+    monthly_salary = input("Enter monthly salary (Optional, numeric): ")
+    job_description = input("Enter job description (Optional): ")
+
+    # Prepare the data
+    career_data = {
+        "job_title": job_title,
+        "company": company,
+        "start_date": start_date,
+        "end_date": end_date if end_date else None,
+        "monthly_salary": int(monthly_salary) if monthly_salary else None,
+        "job_description": job_description
+    }
+
+    try:
+        response = requests.post(f"{BASE_URL}/add_career_history/{alumni_id}", json=career_data)
+        if response.status_code == 200:
+            print("Career history added successfully.")
+        else:
+            print(f"Failed to add career history: {response.json()['message']}")
     except requests.exceptions.RequestException as e:
         print(f"Error during request: {e}")
     
@@ -175,7 +276,18 @@ def alumni_operations():
                             if key_print == "Alumni id":
                                 key_print = "Alumni ID (User Name)"
                             print(f"{key_print}: {value}")
-            
+                degree_details = get_degree(ALUMNI_ID)
+                if degree_details["status"] == "error":
+                    print(f"Error: {degree_details['message']}")
+                # Print the response in a formatted way
+                alumni_info = degree_details['degree']
+                print("=== Degree Information ===")
+                for key, value in alumni_info.items():
+                    key_print = key.replace('_', ' ').capitalize()
+                    if key_print == "Alumni id" or key_print == "Degree id":
+                        continue
+                        key_print = "Alumni ID (User Name)"
+                    print(f"{key_print}: {value}")
             elif sub_choice == "2":
                 print("\n=== Edit Profile ===")
                 edit_profile(ALUMNI_ID)
@@ -188,12 +300,28 @@ def alumni_operations():
 
             if sub_choice == "1":
                 print("\n=== View Career ===")
-                # 這裡可以實現查看事業資料功能
-                print("View Career functionality is under construction.")
-            
+                career_details = get_career(ALUMNI_ID)
+                if career_details["status"] == "error":
+                    print(f"Error: {career_details['message']}")
+                # Print the response in a formatted way
+                alumni_info = career_details['career_paths']
+                for i in range(len(alumni_info)):
+                    print(f"=== Job {i+1} ===")
+                    for key, value in alumni_info[i].items():
+                        key_print = key.replace('_', ' ').capitalize()
+                        if key_print == "Alumni id":
+                            continue
+                            key_print = "Alumni ID (User Name)"
+                        if key_print == "End date":
+                            print_later = f"{key_print}: {value if value else 'Present'}"
+                            continue
+                        print(f"{key_print}: {value}")
+                    print(print_later)
+      
             elif sub_choice == "2":
                 print("\n=== Edit Career ===")
                 # 這裡可以實現編輯事業資料功能
+                add_job(ALUMNI_ID)
                 print("Edit Career functionality is under construction.")
 
         elif choice == "3":
