@@ -998,7 +998,6 @@ def find_achievements_by_category_endpoint():
     return jsonify(achievements), 200
 
 # Association Management Endpoints
-
 @app.route('/create_association', methods=['POST'])
 def create_association_endpoint():
     """
@@ -1006,16 +1005,20 @@ def create_association_endpoint():
 
     Input JSON:
         {
-            "name": "Alumni Association",
+            "associaiton_name": "Alumni Association",
+            "address": "No. 123, ZhonZheng Rd., Daan District, Taipei City 106, Taiwan",
+            "phone": "0123456789",
+            "email": "a@gmail.cmo",
+            "founded_year": 2020,
             "description": "An association for alumni to network.",
-            "created_date": "2024-01-15"
         }
 
     Returns:
         JSON with status and message.
     """
+
     data = request.json
-    if not data or not all(k in data for k in ['name', 'description', 'created_date']):
+    if not data or not all(k in data for k in ['association_name', 'address', 'phone', 'email', 'founded_year', 'description']):
         return jsonify({"status": "error", "message": "Missing required fields"}), 400
 
     message = create_association(data)
@@ -1030,8 +1033,12 @@ def update_association_endpoint(association_id):
 
     Input JSON:
         {
-            "name": "Updated Alumni Association",
-            "description": "An updated description for alumni to network."
+            "association_name": "New Alumni Association",
+            "address": "456 Elm St, City, Country",
+            "phone": "0987654321",
+            "email": ""
+            "founded_year": 2021,
+            "description": "An association for alumni to network and collaborate."
         }
 
     Args:
@@ -1091,11 +1098,17 @@ def add_member_to_association_endpoint(association_id, alumni_id):
     Args:
         alumni_id (int): Alumni ID.
         association_id (int): Association ID.
+    
+    JSON:
+        {
+            "join_date": '2024-10-15',
+        }
 
     Returns:
         JSON with status and message.
     """
-    message = add_member_to_association(alumni_id, association_id)
+    data = request.json
+    message = add_member_to_association(alumni_id, association_id, data)
     if "Error" in message:
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 201
@@ -1227,7 +1240,6 @@ def list_events_by_association_endpoint(association_id):
     return jsonify(events), 200
 
 # Data Analysis Endpoints
-
 @app.route('/get_alumni_employment_trends', methods=['GET'])
 def get_alumni_employment_trends_endpoint():
     """
@@ -1254,16 +1266,6 @@ def get_alumni_employment_trends_endpoint():
     trends = get_alumni_employment_trends(department, (start_year, end_year))
     return jsonify(trends), 200
 
-@app.route('/analyze_event_participation_rates', methods=['GET'])
-def analyze_event_participation_rates_endpoint():
-    """
-    Analyzes participation rates for all events.
-
-    Returns:
-        JSON with participation rates.
-    """
-    participation_rates = analyze_event_participation_rates()
-    return jsonify(participation_rates), 200
 
 @app.route('/calculate_donation_correlations', methods=['GET'])
 def calculate_donation_correlations_endpoint():

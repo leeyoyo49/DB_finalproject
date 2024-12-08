@@ -929,16 +929,21 @@ def create_association(data):
 
     Args:
         data (dict): Association details.
-
+            - associaiton_name (str): Association name.
+            - address (str): Association address.
+            - phone (str): Association phone number.
+            - email (str): Association email address.
+            - founded_year (int): Year the association was founded.
+            - description (str): Association description.
     Returns:
         str: Success or error message.
     """
     try:
         sql_query = """
-            INSERT INTO association (name, description, created_date)
-            VALUES (%s, %s, %s)
+            INSERT INTO alumni_association (association_name, address, phone, email, founded_year, description)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """
-        query(sql_query, (data['name'], data['description'], data['created_date']))
+        query(sql_query, (data['association_name'], data['address'], data['phone'], data['email'], data['founded_year'], data['description']))
         return "Association created successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -956,7 +961,7 @@ def update_association(association_id, data):
     """
     try:
         updates = ", ".join(f"{key} = %s" for key in data.keys())
-        sql_query = f"UPDATE association SET {updates} WHERE association_id = %s"
+        sql_query = f"UPDATE alumni_association SET {updates} WHERE association_id = %s"
         query(sql_query, (*data.values(), association_id))
         return "Association updated successfully."
     except Exception as e:
@@ -973,7 +978,7 @@ def delete_association(association_id):
         str: Success or error message.
     """
     try:
-        sql_query = "DELETE FROM association WHERE association_id = %s"
+        sql_query = "DELETE FROM alumni_association WHERE association_id = %s"
         query(sql_query, (association_id,))
         return "Association deleted successfully."
     except Exception as e:
@@ -990,7 +995,7 @@ def get_association(association_id):
         dict: Association details or error message.
     """
     try:
-        sql_query = "SELECT * FROM association WHERE association_id = %s"
+        sql_query = "SELECT * FROM alumni_association WHERE association_id = %s"
         columns, results = query(sql_query, (association_id,))
         if not results:
             return {"status": "error", "message": "Association not found"}
@@ -1001,7 +1006,7 @@ def get_association(association_id):
         return {"status": "error", "message": str(e)}
 
 # Membership Management Functions
-def add_member_to_association(alumni_id, association_id):
+def add_member_to_association(alumni_id, association_id, data):
     """
     Adds a member to an association.
 
@@ -1014,10 +1019,10 @@ def add_member_to_association(alumni_id, association_id):
     """
     try:
         sql_query = """
-            INSERT INTO association_membership (alumni_id, association_id)
-            VALUES (%s, %s)
+            INSERT INTO is_member (alumni_id, association_id, date_joined)
+            VALUES (%s, %s, %s)
         """
-        query(sql_query, (alumni_id, association_id))
+        query(sql_query, (alumni_id, association_id, data['date_joined']))
         return "Member added to association successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -1034,7 +1039,7 @@ def remove_member_from_association(alumni_id, association_id):
         str: Success or error message.
     """
     try:
-        sql_query = "DELETE FROM association_membership WHERE alumni_id = %s AND association_id = %s"
+        sql_query = "DELETE FROM is_member WHERE alumni_id = %s AND association_id = %s"
         query(sql_query, (alumni_id, association_id))
         return "Member removed from association successfully."
     except Exception as e:
@@ -1053,7 +1058,7 @@ def list_association_members(association_id):
     try:
         sql_query = """
             SELECT a.alumni_id, al.first_name, al.last_name
-            FROM association_membership a
+            FROM is_member a
             JOIN alumni al ON a.alumni_id = al.alumni_id
             WHERE a.association_id = %s
         """
@@ -1371,7 +1376,11 @@ def list_events_by_association(association_id):
         dict: List of events or error message.
     """
     try:
-        sql_query = "SELECT * FROM association_event WHERE association_id = %s"
+        sql_query = """
+            SELECT * FROM association_event
+            JOIN held_by ON association_event.event_name = held_by.event_name AND association_event.date = held_by.date
+            WHERE held_by.association_id = %s
+        """
         columns, results = query(sql_query, (association_id,))
         events = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "events": events}
@@ -1405,27 +1414,6 @@ def get_alumni_employment_trends(department, year_range):
         columns, results = query(sql_query, (department, start_year, end_year))
         trends = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "employment_trends": trends}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-def analyze_event_participation_rates():
-    """
-    Analyzes participation rates for all events.
-
-    Returns:
-        dict: Participation rates or error message.
-    """
-    try:
-        sql_query = """
-            SELECT event_id, title, COUNT(participant_id) AS total_participants
-            FROM participated_by ep
-            JOIN association_event ae ON ep.event_id = ae.event_id
-            GROUP BY event_id, title
-            ORDER BY total_participants DESC
-        """
-        columns, results = query(sql_query)
-        participation_rates = [dict(zip(columns, row)) for row in results]
-        return {"status": "success", "participation_rates": participation_rates}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
