@@ -39,15 +39,25 @@ def login():
     """Login to the system."""
     global ROLE, USER_ID, USER, ALUMNI_ID
     print("\n=== Login ===")
+    
     username = input("Enter username: ")
     password = input("Enter password: ")
+    
     data = {"username": username, "password": password}
-    response = requests.post(f"{BASE_URL}/login", json=data)
-    if response.status_code == 200:
-        print(response.json()["message"])
-        return response.json().get("role"), response.json().get("user_id"), response.json().get("username")
-    else:
-        print(f"Login failed: {response.json().get('message')}")
+    
+    try:
+        response = requests.post(f"{BASE_URL}/login", json=data)
+        
+        if response.status_code == 200:
+            print(response.json()["message"])  # 打印成功訊息
+            return response.json().get("role"), response.json().get("user_id"), response.json().get("username")
+        
+        else:
+            print(f"Login failed: {response.json().get('message')}")
+            return -1, -1, -1
+    
+    except requests.exceptions.RequestException as e:
+        print(f"Request error: {e}")
         return -1, -1, -1
     
 def alumni_operations():
