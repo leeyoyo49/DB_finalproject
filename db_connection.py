@@ -3,11 +3,13 @@ import logging
 import os
 
 # PostgreSQL connection setup
-DB_PASSWORD = os.getenv('DB_PASSWORD')
-#Replace with your actual PostgreSQL password
+DB_PASSWORD = os.getenv('DB_PASSWORD', '0418')
+#DB_PASSWORD = '0418'  # Replace with your actual PostgreSQL password
 DB_NAME = 'final proposal'  # Replace with your actual database name
 DB_USER = 'postgres'  # PostgreSQL user
 DB_HOST = 'localhost'  # Host address
+#DB_PORT = '5433'  # Port
+DB_PORT = os.getenv('DB_PORT', '5433')
 
 
 def execute_update(sql_query, params=None):
@@ -28,6 +30,7 @@ def execute_update(sql_query, params=None):
             user=DB_USER,
             password=DB_PASSWORD,
             host=DB_HOST,
+            port=DB_PORT,  # Explicitly specify port
         )
         cursor = connection.cursor()
 
@@ -70,8 +73,8 @@ def query(sql_query, params=None):
             user=DB_USER,
             password=DB_PASSWORD,
             host=DB_HOST,
+            port=DB_PORT,  # Explicitly specify port
         )
-
         cursor = connection.cursor()
 
         # Execute the SQL query with parameters
