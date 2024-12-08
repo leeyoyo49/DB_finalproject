@@ -14,6 +14,7 @@ USER_NAME = None
 ALUMNI_ID = None
 
 def display_main_menu():
+    global ROLE, USER_ID, USER, ALUMNI_ID
     """Display the main menu."""
     print("\n=== University Alumni Tracking System ===")
     print("1. Login as Alumni")
@@ -23,6 +24,7 @@ def display_main_menu():
     print("=========================================")
     
 def register():
+    global ROLE, USER_ID, USER, ALUMNI_ID
     """Register a new user."""
     print("\n=== Register ===")
     username = input("Enter username: ")
@@ -35,6 +37,7 @@ def register():
     
 def login():
     """Login to the system."""
+    global ROLE, USER_ID, USER, ALUMNI_ID
     print("\n=== Login ===")
     username = input("Enter username: ")
     password = input("Enter password: ")
@@ -48,6 +51,7 @@ def login():
         return -1, -1, -1
     
 def alumni_operations():
+    global ROLE, USER_ID, USER, ALUMNI_ID
     """Alumni-specific operations."""
     print("\n=== Select the section you want to enter ===")
     print("1. Profile")
@@ -60,19 +64,24 @@ def alumni_operations():
     choice = input("Enter your choice: ")
     
     if choice == "1":
-        response = requests.get(f"{BASE_URL}//get_user_details/{USER_ID}")
+        endpoint = f"{BASE_URL}/get_user_details/{USER_ID}"
+        # Make the request - let the browser handle the session cookies automatically
+        response = requests.get(endpoint, cookies=requests.cookies.get_dict())  # The browser will handle session cookies automatically
         print(response.json())
     # Let the user choose an operation  
     
 def admin_operations():
+    global ROLE, USER_ID, USER, ALUMNI_ID
     """Admin-specific operations."""
     print("\nAdmin operations can be implemented here.")
     
 def analyst_operations():
+    global ROLE, USER_ID, USER, ALUMNI_ID
     """Analyst-specific operations."""
     print("\nAnalyst operations can be implemented here.")
     
 def main():
+    global ROLE, USER_ID, USER, ALUMNI_ID
     while True:
         display_main_menu()
         choice = input("Loggin as: ")
@@ -121,6 +130,6 @@ def main():
                 else:
                     print("Invalid role. Please try again.")
                     continue
-        
+
 if __name__ == "__main__":
     main()
