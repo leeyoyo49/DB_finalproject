@@ -916,7 +916,12 @@ def list_achievements(alumni_id):
         dict: List of achievements or error message.
     """
     try:
-        sql_query = "SELECT * FROM achievement WHERE alumni_id = %s"
+        sql_query = """
+        SELECT * 
+        FROM achievement 
+        JOIN alumni_leader ON achievement.alumnileader_id = alumni_leader.alumnileader_id
+        WHERE alumni_id = %s 
+        """
         columns, results = query(sql_query, (alumni_id,))
         achievements = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "achievements": achievements}
