@@ -717,21 +717,31 @@ def update_achievement(alumnileader_id: str, title: str, date: str,
     except requests.RequestException as e:
         print("Error while updating achievement details:", e)
         return False
-
-
-def delete_achievement(achievement_id: int) -> bool:
+    
+def delete_achievement(title: str, date: str, alumnileader_id: str) -> bool:
     """
     Delete an achievement record on the server.
 
     Args:
-        achievement_id (int): ID of the achievement to delete.
+        title (str): Title of the achievement to delete.
+        date (str): Date of the achievement to delete.
+        alumnileader_id (str): Alumnileader ID associated with the achievement.
 
     Returns:
         bool: True if the deletion was successful, False otherwise.
     """
     try:
-        url = f"{BASE_URL}/delete_achievement/{achievement_id}"
-        response = requests.delete(url)
+        url = f"{BASE_URL}/delete_achievement"
+        
+        # Preparing the data to send in the body
+        data = {
+            "title": title,
+            "date": date,
+            "alumnileader_id": alumnileader_id
+        }
+
+        # Sending the DELETE request with the JSON body
+        response = requests.delete(url, json=data)
 
         if response.status_code == 200:
             print("Deletion successful.")
@@ -748,6 +758,149 @@ def delete_achievement(achievement_id: int) -> bool:
 
     except requests.RequestException as e:
         print("Error while deleting achievement details:", e)
+        return False
+
+def create_user(username: str, password: str, role: str, current_user: str):
+    """
+    向伺服器發送請求創建新用戶（僅限 Admin）。
+
+    參數:
+        username (str): 要創建的用戶名。
+        password (str): 用戶的密碼。
+        role (str): 用戶的角色（例如，"Admin" 或其他角色）。
+        current_user (str): 發送請求的當前用戶名，該用戶必須擁有 Admin 權限。
+
+    回傳:
+        bool: 如果創建成功，返回 True；如果創建失敗，返回 False。
+    """
+    try:
+        url = f"{BASE_URL}/create_user"
+
+        # 構建請求的資料，包含 username, password, role, current_user
+        data = {
+            "username": username,
+            "password": password,
+            "role": role,
+            "current_user": current_user
+        }
+
+        # 發送 POST 請求
+        response = requests.post(url, json=data)
+
+        # 根據伺服器回應的狀態碼處理結果
+        if response.status_code == 201:
+            print(f"用戶 {username} 創建成功。")
+            return response.json()['message']
+        elif response.status_code == 400:
+            print(f"錯誤：{response.json()['message']}")
+            return response.json()['message']
+        elif response.status_code == 403:
+            print(f"錯誤：{response.json()['message']}")
+            return response.json()['message']
+        elif response.status_code == 500:
+            print(f"伺服器錯誤：{response.json()['message']}")
+            return response.json()['message']
+        else:
+            print(f"發生了未知錯誤，狀態碼：{response.status_code}")
+            return "Unknown error"
+
+    except requests.RequestException as e:
+        print(f"請求過程中發生錯誤：{e}")
+        return False
+
+def add_alumni(username:str, first_name: str, last_name: str, sex: str, address: str, graduation_year: int, user_id: int, phone: str) -> bool:
+    """
+    向伺服器發送請求新增校友記錄。
+
+    參數:
+        first_name (str): 校友的名字。
+        last_name (str): 校友的姓氏。
+        sex (str): 校友的性別（例如，"M" 或 "F"）。
+        address (str): 校友的地址。
+        graduation_year (int): 校友的畢業年份。
+        user_id (int): 該校友對應的用戶 ID。
+        phone (str): 校友的電話號碼。
+
+    回傳:
+        bool: 如果新增成功，返回 True；如果新增失敗，返回 False。
+    """
+    try:
+        url = f"{BASE_URL}/add_alumni"
+
+        # 構建請求的資料，包含校友資料
+        data = {
+            "alumni_id": username,
+            "first_name": first_name,
+            "last_name": last_name,
+            "sex": sex,
+            "address": address,
+            "graduation_year": graduation_year,
+            "user_id": user_id,
+            "phone": phone
+        }
+
+        # 發送 POST 請求
+        response = requests.post(url, json=data)
+
+        # 根據伺服器回應的狀態碼處理結果
+        if response.status_code == 201:
+            print(f"校友 {first_name} {last_name} 新增成功。")
+            return True
+        elif response.status_code == 400:
+            print(f"錯誤：{response.json()['message']}")
+            return False
+        elif response.status_code == 500:
+            print(f"伺服器錯誤：{response.json()['message']}")
+            return False
+        else:
+            print(f"發生了未知錯誤，狀態碼：{response.status_code}")
+            return False
+
+    except requests.RequestException as e:
+        print(f"請求過程中發生錯誤：{e}")
+        return False
+
+def delete_user(user_id: int, username: str) -> bool:
+    """
+    向伺服器發送請求刪除用戶。
+
+    參數:
+        user_id (int): 要刪除的用戶 ID。
+        username (str): 發送請求的用戶名。
+
+    回傳:
+        bool: 如果刪除成功，返回 True；如果刪除失敗，返回 False。
+    """
+    try:
+        url = f"{BASE_URL}/delete_user/{user_id}"
+
+        # 構建請求的資料，包含 username
+        data = {
+            "username": username
+        }
+
+        # 發送 DELETE 請求
+        response = requests.delete(url, json=data)
+
+        # 根據伺服器回應的狀態碼處理結果
+        if response.status_code == 200:
+            print("用戶刪除成功。")
+            return True
+        elif response.status_code == 400:
+            print(f"錯誤：{response.json()['message']}")
+            return False
+        elif response.status_code == 403:
+            print(f"錯誤：{response.json()['message']}")
+            return False
+        elif response.status_code == 500:
+            print(f"伺服器錯誤：{response.json()['message']}")
+            return False
+        else:
+            print(f"發生了未知錯誤，狀態碼：{response.status_code}")
+            return False
+
+    except requests.RequestException as e:
+        print(f"請求過程中發生錯誤：{e}")
         return False
 
 def admin_operations():
@@ -819,10 +972,34 @@ def admin_operations():
             
             # Register
             if alumni_choice == "1":
-                alumni_id = input("Enter the alumni ID: ")
-                name = input("Enter the alumni name: ")
-                email = input("Enter the alumni email: ")
-                password = input("Enter the alumni password: ")
+                # 用戶輸入區域
+                username = input("輸入要創建的用戶名：")
+                password = input("輸入密碼：")
+                current_user = input("輸入當前用戶名（必須是 Admin）：")
+
+                # 呼叫 create_user 函式
+                user_id = create_user(username, password, "Alumni", current_user)
+                print(user_id)
+                if user_id:
+                    # 用戶輸入區域
+                    first_name = input("輸入校友的名字：")
+                    last_name = input("輸入校友的姓氏：")
+                    sex = input("輸入校友的性別（M/F）：")
+                    address = input("輸入校友的地址：")
+                    graduation_year = int(input("輸入校友的畢業年份："))
+                    phone = input("輸入校友的電話號碼：")
+
+                    # 呼叫 add_alumni 函式
+                    add_alumni(username, first_name, last_name, sex, address, graduation_year, user_id, phone)
+            elif alumni_choice == '2':
+                pass
+            elif alumni_choice == "3":
+                # 用戶輸入區域
+                user_id = int(input("輸入要刪除的用戶 ID："))
+                username = input("輸入你的用戶名：")
+
+                # 呼叫 delete_user 函式
+                delete_user(user_id, username)
         elif sub_choice == "4":
             print("\n=== Achievement ===")
             print("1. Insert")
@@ -859,7 +1036,14 @@ def admin_operations():
                 update_achievement(alumnileader_id, title, date, 
                                    new_description, new_category)            
             elif achievement_choice == "3":
-                pass
+                # User input section
+                alumnileader_id = input("Enter the alumnileader_id associated with the achievement: ")
+                title = input("Enter the title of the achievement to delete: ")
+                date = input("Enter the date of the achievement to delete: ")
+
+                # Call the delete function
+                delete_achievement(title, date, alumnileader_id)
+                
 
 
 

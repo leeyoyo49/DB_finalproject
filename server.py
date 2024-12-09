@@ -167,14 +167,11 @@ def create_user_endpoint():
     Return JSON:
         {
             "status": "success",
-            "message": "用戶 b11705022 創建成功"
+            "message": "用戶 b11705022 創建成功",
+            "user_id":"user_id"
         }
     """
     data = request.json
-    username = data.get("username")
-    if username not in logged_in_users:
-        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
-    
     username = data.get("username")
     password = data.get("password")
     role = data.get("role")
@@ -191,7 +188,7 @@ def create_user_endpoint():
     if "Error" in result_message:
         return jsonify({"status": "error", "message": result_message}), 500
 
-    return jsonify({"status": "success", "message": result_message}), 201
+    return jsonify({"status": "success", "message": int(result_message)}), 201
 
 
 
@@ -408,7 +405,7 @@ def add_alumni_endpoint():
         JSON with status and message.
     """
     data = request.json
-    if not data or not all(k in data for k in ['first_name', 'last_name', 'sex', 'address', 'graduation_year', 'user_id', 'phone']):
+    if not data or not all(k in data for k in ['alumni_id', 'first_name', 'last_name', 'sex', 'address', 'graduation_year', 'user_id', 'phone']):
         return jsonify({"status": "error", "message": "Missing required fields"}), 400
 
     message = add_alumni(data)
@@ -929,7 +926,7 @@ def update_achievement_endpoint():
     return jsonify({"status": "success", "message": message}), 200
 
 @app.route('/delete_achievement', methods=['DELETE'])
-def delete_achievement_endpoint(achievement_id):
+def delete_achievement_endpoint():
     """
     Deletes an achievement record.
 

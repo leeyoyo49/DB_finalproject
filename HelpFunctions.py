@@ -62,11 +62,12 @@ def add_alumni(data):
     try:
         # SQL query to insert a new alumni record
         sql_query = """
-            INSERT INTO alumni (first_name, last_name, sex, address, graduation_year, user_id, phone)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO alumni (alumni_id, first_name, last_name, sex, address, graduation_year, user_id, phone)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
         # Extract the required fields from the data dictionary
         params = (
+            data.get('alumni_id'),
             data.get('first_name'),
             data.get('last_name'),
             data.get('sex'),
@@ -415,7 +416,16 @@ def create_user(username, password, role):
         # Execute the query with the provided parameters
         rows_affected = execute_update(sql_query, (username, password, role))
         
-        return "User created successfully." if rows_affected else "Failed to create user."
+        sql_query_4_user_id = """
+            select user_id from user_ where user_name = %s and password = %s and role = %s
+        """
+        import time
+        time.sleep(0.1)
+
+        column_names, rows = query(sql_query_4_user_id, (username, password, role))
+        user_id = rows[0][0]
+        
+        return str(user_id) if user_id else "Error: Failed to create user."
     except Exception as e:
         logging.error("Error creating user", exc_info=True)
         return f"Error: {str(e)}"
