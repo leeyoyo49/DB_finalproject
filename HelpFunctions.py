@@ -1080,81 +1080,8 @@ def list_association_members(association_id):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-# Event Management Functions
-def create_event(association_id, event_data):
-    """
-    Creates an event for an association.
 
-    Args:
-        association_id (int): Association ID.
-        event_name (int): Association ID.
-        date (str): Event date in YYYY-MM-DD format.
-        description (str): Event description.
-        location (str): Event location.
 
-    Returns:
-        str: Success or error message.
-    """
-    try:
-        sql_query = """
-            INSERT INTO association_event (event_name, date, description, location)
-            VALUES (%s, %s, %s, %s)
-        """
-        query(sql_query, (
-            event_data['event_name'], event_data['date'], event_data['description'], event_data['location']
-        ))
-
-        sql_query = """
-            INSERT INTO held_by (association_id, event_name, date)
-            VALUES (%s, %s, %s)
-        """
-        query(sql_query, (association_id, event_data['event_name'], event_data['date']))
-        return "Event created successfully."
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-def update_event(association_id, event_data):
-    """
-    Updates an event record.
-
-    Args:
-        association_id (int): Association ID.
-        event_name (int): Association ID.
-        date (str): Event date in YYYY-MM-DD format.
-        description (str): Event description.
-        location (str): Event location.
-
-    Returns:
-        str: Success or error message.
-    """
-    try:
-        sql_query = """
-            UPDATE association_event
-            SET description = %s, location = %s
-            WHERE event_name = %s AND date = %s
-        """
-        query(sql_query, (event_data['description'], event_data['location'], event_data['event_name'], event_data['date']))
-        return "Event updated successfully."
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-def delete_event(event_id, data):
-    """
-    Deletes an event.
-
-    Args:
-        event_name (int): Event name,
-        date (str): Event date in YYYY-MM-DD format.
-
-    Returns:
-        str: Success or error message.
-    """
-    try:
-        sql_query = "DELETE FROM association_event WHERE event_name = %s AND date = %s"
-        query(sql_query, (data['event_name'],data['date']))
-        return "Event deleted successfully."
-    except Exception as e:
-        return f"Error: {str(e)}"
 
 def list_events_by_association(association_id):
     """
