@@ -172,10 +172,6 @@ def create_user_endpoint():
     """
     data = request.json
     username = data.get("username")
-    if username not in logged_in_users:
-        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
-    
-    username = data.get("username")
     password = data.get("password")
     role = data.get("role")
     current_user = data.get("current_user")
@@ -195,7 +191,7 @@ def create_user_endpoint():
 
 
 
-@app.route('/delete_user/<int:user_id>', methods=['DELETE'])
+@app.route('/delete_user/<string:user_id>', methods=['DELETE'])
 def delete_user_endpoint(user_id):
     """
     Endpoint for deleting a user.
@@ -214,8 +210,6 @@ def delete_user_endpoint(user_id):
     # check if the user is logged in
     data = request.json
     username = data.get("username")
-    if username not in logged_in_users:
-        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
     
     # Role check: only Admin can delete users
     data = request.json
@@ -229,7 +223,7 @@ def delete_user_endpoint(user_id):
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 200
 
-@app.route('/update_user/<int:user_id>', methods=['PUT'])
+@app.route('/update_user/<string:user_id>', methods=['PUT'])
 def update_user_endpoint(user_id):
     """
     Endpoint for updating a user's details.
@@ -248,12 +242,10 @@ def update_user_endpoint(user_id):
     """
     # check if the user is logged in
     data = request.json
-    username = data.get("username")
-    if username not in logged_in_users:
-        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
+    admin_name = data.get("admin_name")
     
     # Role check: only Admin can update users
-    has_permission, message = check_permissions(username, "Admin")
+    has_permission, message = check_permissions(admin_name, "Admin")
     if not has_permission:
         return jsonify({"status": "error", "message": message}), 403
     
@@ -836,7 +828,7 @@ def update_achievement_endpoint():
     return jsonify({"status": "success", "message": message}), 200
 
 @app.route('/delete_achievement', methods=['DELETE'])
-def delete_achievement_endpoint(achievement_id):
+def delete_achievement_endpoint():
     """
     Deletes an achievement record.
 
