@@ -1009,8 +1009,9 @@ def get_association(association_id):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-# Membership Management Functions
-def add_member_to_association(alumni_id, association_id, data):
+from datetime import datetime
+
+def add_member_to_association(alumni_id, association_id):
     """
     Adds a member to an association.
 
@@ -1021,15 +1022,21 @@ def add_member_to_association(alumni_id, association_id, data):
     Returns:
         str: Success or error message.
     """
+    #print("got here")
+
     try:
+        # Get the current date in 'YYYY-MM-DD' format
+        today_date = datetime.today().strftime('%Y-%m-%d')
+
         sql_query = """
-            INSERT INTO is_member (alumni_id, association_id, date_joined)
-            VALUES (%s, %s, %s)
+            INSERT INTO is_member (alumni_id, association_id, join_date)
+            VALUES (%s, %s, %s);
         """
-        query(sql_query, (alumni_id, association_id, data['date_joined']))
+        query(sql_query, (alumni_id, association_id, today_date))
         return "Member added to association successfully."
     except Exception as e:
         return f"Error: {str(e)}"
+
 
 def remove_member_from_association(alumni_id, association_id):
     """
@@ -1246,28 +1253,6 @@ def get_association(association_id):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-# Membership Management Functions
-def add_member_to_association(alumni_id, association_id):
-    """
-    Adds a member to an association.
-
-    Args:
-        alumni_id (int): Alumni ID.
-        association_id (int): Association ID.
-
-    Returns:
-        str: Success or error message.
-    """
-    try:
-        sql_query = """
-            INSERT INTO association_membership (alumni_id, association_id)
-            VALUES (%s, %s)
-        """
-        query(sql_query, (alumni_id, association_id))
-        return "Member added to association successfully."
-    except Exception as e:
-        return f"Error: {str(e)}"
-
 def remove_member_from_association(alumni_id, association_id):
     """
     Removes a member from an association.
@@ -1280,7 +1265,7 @@ def remove_member_from_association(alumni_id, association_id):
         str: Success or error message.
     """
     try:
-        sql_query = "DELETE FROM association_membership WHERE alumni_id = %s AND association_id = %s"
+        sql_query = "DELETE FROM is_member WHERE alumni_id = %s AND association_id = %s"
         query(sql_query, (alumni_id, association_id))
         return "Member removed from association successfully."
     except Exception as e:
@@ -1298,8 +1283,8 @@ def list_association_members(association_id):
     """
     try:
         sql_query = """
-            SELECT a.alumni_id, al.first_name, al.last_name
-            FROM association_membership a
+            SELECT a.alumni_id, al.first_name, al.last_name, al.phone
+            FROM is_member a
             JOIN alumni al ON a.alumni_id = al.alumni_id
             WHERE a.association_id = %s
         """
@@ -1687,4 +1672,38 @@ def get_all_upcoming_events():
         events = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "events": events}
     except Exception as e:
+        return {"status": "error", "message": str(e)}
+    
+    
+def is_association_cadre(alumni_id):
+    """
+    Return a list of associations that the alumni is a cadre of. Store the association and position.
+    If the alumni is not a cadre of any association, return an empty list.
+    
+    Args:
+        alumni_id (int): Alumni ID.
+        
+    Returns:
+        dict: List of associations or error message.
+    """
+    try:
+        # SQL query to fetch associations for the given alumni
+        sql_query = """
+            SELECT a.association_id, 
+                a.position,
+                asso.association_name
+            FROM is_cadre a
+            JOIN alumni_association asso ON a.association_id = asso.association_id
+            WHERE a.alumni_id = %s
+        """
+        # Execute the query
+        columns, results = query(sql_query, (alumni_id,))
+        
+        # Format results into a list of dictionaries
+        associations = [dict(zip(columns, row)) for row in results]
+        
+        # Return success response
+        return {"status": "success", "associations": associations}
+    except Exception as e:
+        # Handle errors and return an error response
         return {"status": "error", "message": str(e)}
