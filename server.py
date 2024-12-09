@@ -1378,26 +1378,91 @@ def list_participants_endpoint(data):
         return jsonify(participants), 404
     return jsonify(participants), 200
 
-@app.route('/get_participation_by_alumni', methods=['GET'])
-def get_participation_by_alumni_endpoint():
+@app.route('/get_participation_by_alumni/<string:alumni_id>', methods=['GET'])
+def get_participation_by_alumni_endpoint(alumni_id):
     """
     Retrieves all events an alumni has participated in.
 
-    JSON:
-        {
-            "alumni_id": 1
-        }
+    URL Parameters:
+        alumni_id (string): The ID of the alumni.
+
     Returns:
-        JSON with list of events.
+        JSON with a list of events or an error message.
     """
-    data = request.json
-    events = get_participation_by_alumni(data)
+    # Call a function to retrieve the events based on alumni_id
+    events = get_participation_by_alumni(alumni_id)
+    
+    if events["status"] == "error":
+        return jsonify(events), 404
+    
+    return jsonify(events), 200
+
+@app.route('/get_association_by_alumni/<string:alumni_id>', methods=['GET'])
+def get_association_by_alumni_endpoint(alumni_id):
+    """
+    Retrieves all associations an alumni has joined.
+
+    URL Parameters:
+        alumni_id (string): The ID of the alumni.
+
+    Returns:
+        JSON with a list of associations or an error message.
+    """
+    # Call a function to retrieve the associations based on alumni_id
+    associations = list_user_associations(alumni_id)
+    
+    if associations["status"] == "error":
+        return jsonify(associations), 404
+    
+    return jsonify(associations), 200
+
+@app.route('/get_personal_events/<string:alumni_id>', methods=['GET'])
+def get_personal_events_endpoint(alumni_id):
+    """
+    Retrieves all personal events an alumni has created.
+
+    URL Parameters:
+        alumni_id (string): The ID of the alumni.
+
+    Returns:
+        JSON with a list of personal events or an error message.
+    """
+    # Call a function to retrieve the personal events based on alumni_id
+    events = list_user_association_events(alumni_id)
+    
+    if events["status"] == "error":
+        return jsonify(events), 404
+    
+    return jsonify(events), 200
+
+@app.route('/get_all_open_associations', methods=['GET'])
+def get_all_associations_endpoint():
+    """
+    Retrieves all associations.
+
+    Returns:
+        JSON with a list of all associations.
+    """
+    associations = get_all_open_association()
+    
+    if associations["status"] == "error":
+        return jsonify(associations), 404
+    return jsonify(associations), 200
+
+@app.route('/get_all_upcoming_events', methods=['GET'])
+def get_all_upcoming_events_endpoint():
+    """
+    Retrieves all upcoming events.
+
+    Returns:
+        JSON with a list of all upcoming events.
+    """
+    events = get_all_upcoming_events()
+    
     if events["status"] == "error":
         return jsonify(events), 404
     return jsonify(events), 200
 
-
-
-
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
+    

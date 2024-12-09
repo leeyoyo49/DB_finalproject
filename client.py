@@ -166,38 +166,6 @@ def edit_profile(alumni_id):
         
 import requests
 
-def get_degree(alumni_id):
-    """
-    Fetches alumni degree information from the server.
-
-    Args:
-        alumni_id (string): ID of the alumni to retrieve.
-
-    Returns:
-        dict: The response JSON containing alumni degree details or error message.
-    """
-    try:
-        # Construct the request URL
-        url = f"{BASE_URL}/get_degree/{alumni_id}"
-        
-        # Send a GET request to the server
-        response = requests.get(url)
-        
-        # Check the status code and handle response
-        if response.status_code == 200:
-            print("Alumni degree details retrieved successfully:")
-            return response.json()
-        elif response.status_code == 404:
-            print("Alumni not found.")
-            return response.json()
-        else:
-            print(f"Unexpected error occurred. Status code: {response.status_code}")
-            return {"status": "error", "message": "Unexpected error occurred."}
-    except requests.RequestException as e:
-        # Handle any request exceptions (e.g., network issues)
-        print("Error while fetching alumni degree details:", e)
-        return {"status": "error", "message": str(e)}
-
 def add_job(alumni_id):
     """
     Interacts with the server to add a career history record for the given alumni.
@@ -231,34 +199,153 @@ def add_job(alumni_id):
     except requests.exceptions.RequestException as e:
         print(f"Error during request: {e}")
         
+def get_degree(alumni_id):
+    """
+    Fetches alumni degree information from the server.
+
+    Args:
+        alumni_id (string): ID of the alumni to retrieve.
+
+    Returns:
+        dict: The response JSON containing alumni degree details or error message.
+    """
+    try:
+        # Construct the request URL
+        url = f"{BASE_URL}/get_degree/{alumni_id}"
+        
+        # Send a GET request to the server
+        response = requests.get(url)
+        
+        # Check the status code and handle response
+        if response.status_code == 200:
+            print("Alumni degree details retrieved successfully:")
+            return response.json()
+        elif response.status_code == 404:
+            print("Alumni not found.")
+            return response.json()
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return {"status": "error", "message": "Unexpected error occurred."}
+    except requests.RequestException as e:
+        # Handle any request exceptions (e.g., network issues)
+        print("Error while fetching alumni degree details:", e)
+        return {"status": "error", "message": str(e)}
+        
 def get_personal_association(alumni_id):
     """
-    Fetches all events an alumni has participated in from the server.
+    Fetches all associations an alumni has participated in from the server.
 
     Args:
         alumni_id (int): Alumni ID.
         base_url (str): Base URL of the Flask application (default: localhost).
 
     Returns:
-        dict: JSON response containing event details or an error message.
+        dict: JSON response containing association details or an error message.
     """
     try:
         # Construct the full URL for the API endpoint
-        url = f"{BASE_URL}/get_participation_by_alumni/{alumni_id}"
+        url = f"{BASE_URL}/get_association_by_alumni/{alumni_id}"
         
         # Send a GET request to the API
         response = requests.get(url)
         
-        # Check for HTTP errors
-        response.raise_for_status()
-        
-        # Parse and return JSON data
-        return response.json()
-    except requests.exceptions.HTTPError as http_err:
-        return {"status": "error", "message": f"HTTP error occurred: {http_err}"}
-    except Exception as err:
-        return {"status": "error", "message": f"An error occurred: {err}"}
+        #print(response.json())
+
+        if response.status_code == 200:
+            print("Personal association retrieved successfully:")
+            return response.json()
+        elif response.status_code == 404:
+            print("Association not found.")
+            return response.json()
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return {"status": "error", "message": "Unexpected error occurred."}
+    except requests.RequestException as e:
+        print("Error while fetching personal association:", e)
+        return {"status": "error", "message": str(e)}
     
+def get_personal_events(alumni_id):
+    '''
+    Fetches all events that is held by the association that the alumni is affiliated with.
+    Args:
+        alumni_id (int): Alumni ID.
+    
+    Returns:
+        dict: JSON response containing event details or an error message.
+    '''
+    try:
+        # Construct the full URL for the API endpoint
+        url = f"{BASE_URL}/get_personal_events/{alumni_id}"
+        
+        # Send a GET request to the API
+        response = requests.get(url)
+        
+        if response.status_code == 200:
+            print("Personal events retrieved successfully:")
+            return response.json()
+        elif response.status_code == 404:
+            print("Events not found.")
+            return response.json()
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return {"status": "error", "message": "Unexpected error occurred."}
+    except requests.RequestException as e:
+        print("Error while fetching personal events:", e)
+        return {"status": "error", "message": str(e)}
+    
+def get_all_associations():
+    '''
+    Fetches all associations that are registered in the system.
+    
+    Returns:
+        dict: JSON response containing association details or an error message.
+    '''
+    try:
+        # Construct the full URL for the API endpoint
+        url = f"{BASE_URL}/get_all_open_associations"
+        
+        # Send a GET request to the API
+        response = requests.get(url)
+        
+        if response.status_code == 200:
+            print("All associations retrieved successfully:")
+            return response.json()
+        elif response.status_code == 404:
+            print("Associations not found.")
+            return response.json()
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return {"status": "error", "message": "Unexpected error occurred."}
+    except requests.RequestException as e:
+        print("Error while fetching all associations:", e)
+        return {"status": "error", "message": str(e)}
+    
+def get_all_upcoming_events():
+    '''
+    Fetches all upcoming events that are registered in the system.
+    
+    Returns:
+        dict: JSON response containing event details or an error message.
+    '''
+    try:
+        # Construct the full URL for the API endpoint
+        url = f"{BASE_URL}/get_all_upcoming_events"
+        
+        # Send a GET request to the API
+        response = requests.get(url)
+        
+        if response.status_code == 200:
+            print("All upcoming events retrieved successfully:")
+            return response.json()
+        elif response.status_code == 404:
+            print("Events not found.")
+            return response.json()
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return {"status": "error", "message": "Unexpected error occurred."}
+    except requests.RequestException as e:
+        print("Error while fetching all upcoming events:", e)
+        return {"status": "error", "message": str(e)}
     
 def alumni_operations():
     global ROLE, USER_ID, USER_NAME, ALUMNI_ID
@@ -379,24 +466,73 @@ def alumni_operations():
                 if response["status"] == "error":
                     print(f"Error: {response['message']}")
                 else:
-                    print(response)
+                    #print(response)
+                    for i in range(len(response['associations'])):
+                        print(f"=== Association {i+1} ===")
+                        key_print = response['associations'][i]['association_name']
+                        print(f"Association Name: {key_print}")
+                        for key, value in response['associations'][i].items():
+                            key_print = key.replace('_', ' ').capitalize()
+                            if key_print == "Association name":
+                                continue
+                            print(f"{key_print}: {value}")
                 #print("Affiliated Association functionality is under construction.")
             elif sub_choice == '2':
                 print("\n=== Your Association Events ===")
-                print("Association Events functionality is under construction.")
+                response = get_personal_events(ALUMNI_ID)
+                if response["status"] == "error":
+                    print(f"Error: {response['message']}")
+                else:
+                    #print(response)
+                    for i in range(len(response['events'])):
+                        print(f"=== Event {i+1} ===")
+                        for key, value in response['events'][i].items():
+                            key_print = key.replace('_', ' ').capitalize()
+                            #if key_print == "Association name":
+                                #continue
+                            print(f"{key_print}: {value}")
+                #print("Association Events functionality is under construction.")
             elif sub_choice == '3':
                 print("\n=== All Alumni Associations ===")
-                print("All Alumni Associations functionality is under construction.")
+                response = get_all_associations()
+                if response["status"] == "error":
+                    print(f"Error: {response['message']}")
+                else:
+                    print(response)
+                    for i in range(len(response['association_details'])):
+                        print(f"=== Association {i+1} ===")
+                        key_print = response['association_details'][i]['association_name']
+                        print(f"Association Name: {key_print}")
+                        for key, value in response['association_details'][i].items():
+                            key_print = key.replace('_', ' ').capitalize()
+                            if key_print == "Association name":
+                                continue
+                            print(f"{key_print}: {value}")
+                #print("All Alumni Associations functionality is under construction.")
             elif sub_choice == '4':
                 print("\n=== All Upcoming Events ===")
-                print("All Upcoming Events functionality is under construction.")
+                response = get_all_upcoming_events()
+                if response["status"] == "error":
+                    print(f"Error: {response['message']}")
+                else:
+                    #print(response)
+                    for i in range(len(response['events'])):
+                        print(f"=== Event {i+1} ===")
+                        key_print = response['events'][i]['event_name']
+                        print(f"Event Name: {key_print}")
+                        for key, value in response['events'][i].items():
+                            key_print = key.replace('_', ' ').capitalize()
+                            if key_print == "Event name":
+                                continue
+                            print(f"{key_print}: {value}")
+                #print("All Upcoming Events functionality is under construction.")
             elif sub_choice == '5':
                 print("\n=== Join an Alumni Association Event ===")
                 print("Please contact the association that holds the event for details.")
-            elif sub_choice == '5':
+            elif sub_choice == '6':
                 print("\n=== Join an Alumni Association ===")
                 print("Please contact the association for more information.")
-            elif sub_choice == '6':
+            elif sub_choice == '7':
                 print("\n=== I am a Cadre of the Alumni Association ===")
                 print("1. Add a new member")
                 print("2. Delete a member")
@@ -405,6 +541,30 @@ def alumni_operations():
                 print("5. Add a participant to an event")
                 print("6. Delete a participant from an event")
                 print("7. Transfer the position of cadre")
+                
+                sub_choice = input("Enter your choice: ")
+                
+                if sub_choice == '1':
+                    print("\n=== Add a New Member ===")
+                    print("This functionality is under construction.")
+                elif sub_choice == '2':
+                    print("\n=== Delete a Member ===")
+                    print("This functionality is under construction.")
+                elif sub_choice == '3':
+                    print("\n=== Add an Event ===")
+                    print("This functionality is under construction.")
+                elif sub_choice == '4':
+                    print("\n=== Delete an Event ===")
+                    print("This functionality is under construction.")
+                elif sub_choice == '5':
+                    print("\n=== Add a Participant to an Event ===")
+                    print("This functionality is under construction.")
+                elif sub_choice == '6':
+                    print("\n=== Delete a Participant from an Event ===")
+                    print("This functionality is under construction.")
+                elif sub_choice == '7':
+                    print("\n=== Transfer the Position of Cadre ===")
+                    print("This functionality is under construction.")
 
         elif choice == "6":
             print("Exiting alumni operations.")

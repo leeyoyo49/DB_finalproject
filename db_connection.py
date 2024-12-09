@@ -10,7 +10,7 @@ DB_USER = 'postgres'  # PostgreSQL user
 DB_HOST = 'localhost'  # Host address
 #DB_PORT = '5433'  # Port
 # DB_PORT = os.getenv('DB_PORT', '5433')
-DB_PORT = '5432'
+DB_PORT = '5433'
 
 
 def execute_update(sql_query, params=None):
