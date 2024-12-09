@@ -802,12 +802,11 @@ def get_donation_trends(year_range):
 # Achievement Management Functions
 
 # Achievement CRUD Functions
-def add_achievement(alumni_id, achievement_data):
+def add_achievement(achievement_data):
     """
     Adds a new achievement for an alumni.
 
     Args:
-        alumni_id (int): Alumni ID.
         achievement_data (dict): Achievement details.
 
     Returns:
@@ -819,14 +818,14 @@ def add_achievement(alumni_id, achievement_data):
             VALUES (%s, %s, %s, %s, %s)
         """
         query(sql_query, (
-            alumni_id, achievement_data['title'], achievement_data['description'], 
-            achievement_data['date'], achievement_data['category']
+            achievement_data['title'], achievement_data['description'], 
+            achievement_data['date'], achievement_data['category'], achievement_data['alumnileader_id']
         ))
         return "Achievement added successfully."
     except Exception as e:
         return f"Error: {str(e)}"
 
-def update_achievement(achievement_id, data):
+def update_achievement(data):
     """
     Updates an achievement record.
 
@@ -838,26 +837,32 @@ def update_achievement(achievement_id, data):
         str: Success or error message.
     """
     try:
-        updates = ", ".join(f"{key} = %s" for key in data.keys())
-        sql_query = f"UPDATE achievement SET {updates} WHERE achievement_id = %s"
-        query(sql_query, (*data.values(), achievement_id))
+        updates = ", ".join(f"{key} = %s" for key in data.keys() if key!= 'alumnileader_id' and key!= 'date' and key!= 'title')
+        
+        sql_query = f"UPDATE achievement SET {updates} WHERE title = %s AND date = %s AND alumnileader_id = %s"
+        alumnileader_id = data.pop('alumnileader_id')
+        date = data.pop('date')
+        title = data.pop('title')
+        query(sql_query, (*data.values(), title, date, alumnileader_id))
         return "Achievement updated successfully."
     except Exception as e:
         return f"Error: {str(e)}"
 
-def delete_achievement(achievement_id):
+def delete_achievement(data):
     """
     Deletes an achievement record.
 
     Args:
-        achievement_id (int): Achievement ID.
-
+        data (dict): Achievement details to delete.
+            - title (str): Achievement title.
+            - date (str): Achievement date.
+            - alumnileader_id (int): Alumni leader ID.
     Returns:
         str: Success or error message.
     """
     try:
-        sql_query = "DELETE FROM achievement WHERE achievement_id = %s"
-        query(sql_query, (achievement_id,))
+        sql_query = "DELETE FROM achievement WHERE title = %s AND date = %s AND alumnileader_id = %s"
+        query(sql_query, (data['title'], data['date'], data['alumnileader_id']))
         return "Achievement deleted successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -1329,38 +1334,40 @@ def create_event(association_id, event_data):
     except Exception as e:
         return f"Error: {str(e)}"
 
-def update_event(event_id, data):
+def update_event(data):
     """
     Updates an event record.
 
     Args:
-        event_id (int): Event ID.
         data (dict): Event details to update.
 
     Returns:
         str: Success or error message.
     """
     try:
-        updates = ", ".join(f"{key} = %s" for key in data.keys())
-        sql_query = f"UPDATE association_event SET {updates} WHERE event_id = %s"
-        query(sql_query, (*data.values(), event_id))
+        updates = ", ".join(f"{key} = %s" for key in data.keys() if key not in ['title', 'event_date'])
+        sql_query = f"UPDATE association_event SET {updates} WHERE title = %s AND event_date = %s"
+        data['event_date'] = data.pop('event_date')
+        data['title'] = data.pop('title')
+        query(sql_query, (*data.values(), data['title'], data['event_date']))
         return "Event updated successfully."
     except Exception as e:
         return f"Error: {str(e)}"
 
-def delete_event(event_id):
+def delete_event(data):
     """
     Deletes an event.
 
     Args:
-        event_id (int): Event ID.
-
+        event_name (int): Event name,
+        date (str): Event date in YYYY-MM-DD format.
+    
     Returns:
         str: Success or error message.
     """
     try:
-        sql_query = "DELETE FROM association_event WHERE event_id = %s"
-        query(sql_query, (event_id,))
+        sql_query = "DELETE FROM association_event WHERE event_name = %s AND date = %s"
+        query(sql_query, (data['event_name'],data['date']))
         return "Event deleted successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -1390,206 +1397,178 @@ def list_events_by_association(association_id):
 # Data Analysis Functions
 
 # Trends and Insights Functions
-def get_alumni_employment_trends(department, year_range):
-    """
-    Retrieves alumni employment trends for a specific department over a year range.
+# def get_alumni_employment_trends(department, year_range):
+#     """
+#     Retrieves alumni employment trends for a specific department over a year range.
 
-    Args:
-        department (str): Department name.
-        year_range (tuple): Tuple containing start year and end year.
+#     Args:
+#         department (str): Department name.
+#         year_range (tuple): Tuple containing start year and end year.
 
-    Returns:
-        dict: Employment trend data or error message.
-    """
-    try:
-        start_year, end_year = year_range
-        sql_query = """
-            SELECT graduation_year, COUNT(*) AS total_employed
-            FROM career_history ch
-            JOIN alumni al ON ch.alumni_id = al.alumni_id
-            WHERE al.department = %s AND graduation_year BETWEEN %s AND %s
-            GROUP BY graduation_year
-            ORDER BY graduation_year
-        """
-        columns, results = query(sql_query, (department, start_year, end_year))
-        trends = [dict(zip(columns, row)) for row in results]
-        return {"status": "success", "employment_trends": trends}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+#     Returns:
+#         dict: Employment trend data or error message.
+#     """
+#     try:
+#         start_year, end_year = year_range
+#         sql_query = """
+#             SELECT graduation_year, COUNT(*) AS total_employed
+#             FROM career_history ch
+#             JOIN alumni al ON ch.alumni_id = al.alumni_id
+#             WHERE al.department = %s AND graduation_year BETWEEN %s AND %s
+#             GROUP BY graduation_year
+#             ORDER BY graduation_year
+#         """
+#         columns, results = query(sql_query, (department, start_year, end_year))
+#         trends = [dict(zip(columns, row)) for row in results]
+#         return {"status": "success", "employment_trends": trends}
+#     except Exception as e:
+#         return {"status": "error", "message": str(e)}
 
-def calculate_donation_correlations():
-    """
-    Calculates correlations between alumni demographics and donation amounts.
+# def calculate_donation_correlations():
+#     """
+#     Calculates correlations between alumni demographics and donation amounts.
 
-    Returns:
-        dict: Correlation results or error message.
-    """
-    try:
-        sql_query = """
-            SELECT al.department, COUNT(d.donation_id) AS total_donations, AVG(d.amount) AS avg_donation_amount
-            FROM donation d
-            JOIN alumni al ON d.alumni_id = al.alumni_id
-            GROUP BY al.department
-        """
-        columns, results = query(sql_query)
-        correlations = [dict(zip(columns, row)) for row in results]
-        return {"status": "success", "donation_correlations": correlations}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+#     Returns:
+#         dict: Correlation results or error message.
+#     """
+#     try:
+#         sql_query = """
+#             SELECT al.department, COUNT(d.donation_id) AS total_donations, AVG(d.amount) AS avg_donation_amount
+#             FROM donation d
+#             JOIN alumni al ON d.alumni_id = al.alumni_id
+#             GROUP BY al.department
+#         """
+#         columns, results = query(sql_query)
+#         correlations = [dict(zip(columns, row)) for row in results]
+#         return {"status": "success", "donation_correlations": correlations}
+#     except Exception as e:
+#         return {"status": "error", "message": str(e)}
 
-# Special Reports Functions
-def generate_30_year_reunion_list():
-    """
-    Generates a list of alumni who graduated 30 years ago.
+# # Special Reports Functions
+# def generate_30_year_reunion_list():
+#     """
+#     Generates a list of alumni who graduated 30 years ago.
 
-    Returns:
-        dict: List of alumni or error message.
-    """
-    try:
-        sql_query = """
-            SELECT first_name, last_name, graduation_year
-            FROM alumni
-            WHERE graduation_year = EXTRACT(YEAR FROM NOW()) - 30
-        """
-        columns, results = query(sql_query)
-        reunion_list = [dict(zip(columns, row)) for row in results]
-        return {"status": "success", "reunion_list": reunion_list}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+#     Returns:
+#         dict: List of alumni or error message.
+#     """
+#     try:
+#         sql_query = """
+#             SELECT first_name, last_name, graduation_year
+#             FROM alumni
+#             WHERE graduation_year = EXTRACT(YEAR FROM NOW()) - 30
+#         """
+#         columns, results = query(sql_query)
+#         reunion_list = [dict(zip(columns, row)) for row in results]
+#         return {"status": "success", "reunion_list": reunion_list}
+#     except Exception as e:
+#         return {"status": "error", "message": str(e)}
 
-def get_top_achievers(limit=10):
-    """
-    Retrieves the top achievers.
+# def get_top_achievers(limit=10):
+#     """
+#     Retrieves the top achievers.
 
-    Args:
-        limit (int): Number of top achievers to retrieve.
+#     Args:
+#         limit (int): Number of top achievers to retrieve.
 
-    Returns:
-        dict: List of top achievers or error message.
-    """
-    try:
-        sql_query = """
-            SELECT alumni_id, title, description, date
-            FROM achievement
-            ORDER BY date DESC
-            LIMIT %s
-        """
-        columns, results = query(sql_query, (limit,))
-        top_achievers = [dict(zip(columns, row)) for row in results]
-        return {"status": "success", "top_achievers": top_achievers}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-def get_event_participation_statistics(event_id):
-    """
-    Retrieves participation statistics for a specific event.
-
-    Args:
-        event_id (int): Event ID.
-
-    Returns:
-        dict: Event participation statistics or error message.
-    """
-    try:
-        sql_query = """
-            SELECT event_id, title, COUNT(participant_id) AS total_participants
-            FROM participated_by ep
-            JOIN association_event ae ON ep.event_id = ae.event_id
-            WHERE ep.event_id = %s
-            GROUP BY event_id, title
-        """
-        columns, results = query(sql_query, (event_id,))
-        if not results:
-            return {"status": "error", "message": "Event not found or no participants"}
-
-        participation_stats = dict(zip(columns, results[0]))
-        return {"status": "success", "participation_statistics": participation_stats}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-# Event Participation Functions
+#     Returns:
+#         dict: List of top achievers or error message.
+#     """
+#     try:
+#         sql_query = """
+#             SELECT alumni_id, title, description, date
+#             FROM achievement
+#             ORDER BY date DESC
+#             LIMIT %s
+#         """
+#         columns, results = query(sql_query, (limit,))
+#         top_achievers = [dict(zip(columns, row)) for row in results]
+#         return {"status": "success", "top_achievers": top_achievers}
+#     except Exception as e:
+#         return {"status": "error", "message": str(e)}
 
 # Event Participation CRUD Functions
-def add_event_participant(alumni_id, event_id):
+def add_event_participant(data):
     """
     Adds a participant to an event.
 
     Args:
         alumni_id (int): Alumni ID.
-        event_id (int): Event ID.
+        event_name (int): Event name.
+        date (str): Date of participation.
 
     Returns:
         str: Success or error message.
     """
     try:
         sql_query = """
-            INSERT INTO participated_by (alumni_id, event_id)
-            VALUES (%s, %s)
+            INSERT INTO event_participated_by (alumni_id, event_name, date)
+            VALUES (%s, %s, %s)
         """
-        query(sql_query, (alumni_id, event_id))
+        query(sql_query, (data['alumni_id'], data['event_name'], data['date']))
         return "Participant added to event successfully."
     except Exception as e:
         return f"Error: {str(e)}"
 
-def remove_event_participant(alumni_id, event_id):
+def remove_event_participant(data):
     """
     Removes a participant from an event.
 
     Args:
         alumni_id (int): Alumni ID.
-        event_id (int): Event ID.
+        event_name (int): Event name.
 
     Returns:
         str: Success or error message.
     """
     try:
-        sql_query = "DELETE FROM event_participation WHERE alumni_id = %s AND event_id = %s"
-        query(sql_query, (alumni_id, event_id))
+        sql_query = "DELETE FROM event_participated_by WHERE alumni_id = %s AND event_name = %s AND date = %s"
+        query(sql_query, (data['alumni_id'], data['event_name'], data['date'])) 
         return "Participant removed from event successfully."
     except Exception as e:
         return f"Error: {str(e)}"
 
-def list_participants(event_id):
+def list_participants(data):
     """
     Lists all participants for a specific event.
 
     Args:
-        event_id (int): Event ID.
+        event_name (int): Event name.
+        date (str): Event date.
 
     Returns:
         dict: List of participants or error message.
     """
     try:
         sql_query = """
-            SELECT ep.alumni_id, al.first_name, al.last_name
-            FROM event_participation ep
+            SELECT al.alumni_id, al.first_name, al.last_name
+            FROM event_participated_by ep
             JOIN alumni al ON ep.alumni_id = al.alumni_id
-            WHERE ep.event_id = %s
+            WHERE ep.event_name = %s AND ep.date = %s
         """
-        columns, results = query(sql_query, (event_id,))
+        columns, results = query(sql_query, (data['event_name'], data['date']))
         participants = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "participants": participants}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-def get_participation_by_alumni(alumni_id):
+def get_participation_by_alumni(data):
     """
     Retrieves all events an alumni has participated in.
 
     Args:
         alumni_id (int): Alumni ID.
-
     Returns:
         dict: List of events or error message.
     """
     try:
         sql_query = """
-            SELECT ep.event_id, ae.title, ae.event_date
-            FROM event_participation ep
-            JOIN association_event ae ON ep.event_id = ae.event_id
+            SELECT ae.event_name, ae.date
+            FROM event_participated_by ep
+            JOIN association_event ae ON ep.event_name = ae.event_name AND ep.date = ae.date
             WHERE ep.alumni_id = %s
         """
-        columns, results = query(sql_query, (alumni_id,))
+        columns, results = query(sql_query, (data['alumni_id'],))
         events = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "events": events}
     except Exception as e:

@@ -386,7 +386,8 @@ def add_achievement(alumni_id: str, title: str, description: str, date: str, cat
         print(f"Error while adding achievement: {e}")
         return False
 
-def update_achievement(achievement_id: str, title: str = None, date: str = None) -> bool:
+def update_achievement(alumnileader_id: str, title: str, date: str, 
+                       new_description: str = None, new_category: str = None) -> bool:
     """
     Update an achievement record on the server.
 
@@ -399,18 +400,16 @@ def update_achievement(achievement_id: str, title: str = None, date: str = None)
         bool: True if the update was successful, False otherwise.
     """
     # Prepare the data to be updated, only include fields that are provided
-    data = {}
-    if title:
-        data["title"] = title
-    if date:
-        data["date"] = date
-
-    if not data:  # No data provided for update
-        print("Error: No data to update.")
-        return False
+    data = {
+        "alumnileader_id": alumnileader_id,
+        "title": title,
+        "date": date,
+        "description": new_description,
+        "category": new_category
+    }
 
     try:
-        url = f"{BASE_URL}/update_achievement/{achievement_id}"
+        url = f"{BASE_URL}/update_achievement"
         response = requests.put(url, json=data)
         
         if response.status_code == 200:
@@ -556,10 +555,20 @@ def admin_operations():
 
                 add_achievement(alumni_id, title, description, date, category)
             elif achievement_choice == "2":
-                achievement_id = input("Enter the achievement ID: ")
+                # 必須輸入的欄位
+                alumnileader_id = input("Enter the alumnileader ID: ")
                 title = input("Enter the achievement title: ")
                 date = input("Enter the achievement date (YYYY-MM-DD): ")
-                update_achievement(achievement_id, title, date)
+
+                # 可選輸入的欄位，若無輸入則設為 None
+                new_description = input("Enter the new description (or press Enter to skip): ")
+                new_category = input("Enter the new category (or press Enter to skip): ")
+                if new_description == "":
+                    new_description = None
+                if new_category == "":
+                    new_category = None
+                update_achievement(alumnileader_id, title, date, 
+                                   new_description, new_category)            
             elif achievement_choice == "3":
                 pass
 
