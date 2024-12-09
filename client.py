@@ -1159,6 +1159,7 @@ def add_achievement(alumni_id: str, title: str, description: str, date: str, cat
         bool: True if the achievement was added successfully, False otherwise.
     """
     data = {
+        "alumnileader_id": alumni_id,
         "title": title,
         "description": description,
         "date": date,
@@ -1563,7 +1564,7 @@ def admin_operations():
             elif donation_choice == "4":
                 alu_id = input("Enter the alumni ID to look up: ")            
                 donations = get_donation(alu_id)
-                for donation in donations.items():
+                for donation in donations.values():
                     print(donation)
         elif sub_choice == "2":
             print("\n=== Alumni Account ===")
