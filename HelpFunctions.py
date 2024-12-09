@@ -863,9 +863,9 @@ def update_achievement(data):
         sql_query = f"UPDATE achievement SET {updates} WHERE title = %s AND date = %s AND alumnileader_id = %s"
 
         # 取出條件值
-        alumnileader_id = data.pop('alumnileader_id')
-        date = data.pop('date')
-        title = data.pop('title')
+        alumnileader_id = data.get('alumnileader_id')
+        date = data.get('date')
+        title = data.get('title')
 
         # 確保更新欄位的順序與 values 一致
         filtered_data = {key: value for key, value in data.items() if key not in ['alumnileader_id', 'date', 'title'] and value is not None}
