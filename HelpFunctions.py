@@ -746,7 +746,7 @@ def get_donation(donation_id):
         donation_details = [dict(zip(columns, row)) for row in results]
         #career_paths = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "donation_details": donation_details}
-    except Exception as e:
+    except Exception as e: 
         return {"status": "error", "message": str(e)}
 
 # Donation Analysis Functions
