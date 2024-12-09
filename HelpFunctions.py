@@ -1138,7 +1138,7 @@ def update_event(association_id, event_data):
     except Exception as e:
         return f"Error: {str(e)}"
 
-def delete_event(event_id, data):
+def delete_event(data):
     """
     Deletes an event.
 
@@ -1151,6 +1151,8 @@ def delete_event(event_id, data):
     """
     try:
         sql_query = "DELETE FROM association_event WHERE event_name = %s AND date = %s"
+        query(sql_query, (data['event_name'],data['date']))
+        sql_query = "DELETE FROM held_by WHERE event_name = %s AND date = %s"
         query(sql_query, (data['event_name'],data['date']))
         return "Event deleted successfully."
     except Exception as e:
@@ -1575,7 +1577,7 @@ def is_association_cadre(alumni_id):
                 asso.association_name
             FROM is_cadre a
             JOIN alumni_association asso ON a.association_id = asso.association_id
-            WHERE a.alumni_id = %s
+            WHERE a.alumni_id = %s AND (a.end_date IS NULL OR a.end_date > CURRENT_DATE);
         """
         # Execute the query
         columns, results = query(sql_query, (alumni_id,))
@@ -1588,3 +1590,54 @@ def is_association_cadre(alumni_id):
     except Exception as e:
         # Handle errors and return an error response
         return {"status": "error", "message": str(e)}
+
+
+def add_cadre_to_association(data):
+    """
+    Adds a cadre to an association.
+
+    Args:
+        alumni_id (int): Alumni ID.
+        association_id (int): Association ID.
+        position (str): Cadre position.
+
+    Returns:
+        str: Success or error message.
+    """
+    try:
+        sql_query = """
+            INSERT INTO is_cadre (alumni_id, association_id, position, start_date)
+            VALUES (%s, %s, %s, CURRENT_DATE)
+        """
+        query(sql_query, (data['alumni_id'], data['association_id'], data['position']))
+        return "Cadre added to association successfully."
+    except Exception as e:
+        return f"Error: {str(e)}"
+    
+def end_cadre(association_id, alumni_id):
+    """
+    Logic to end the cadre position of an alumni in an association.
+
+    Args:
+        association_id (int): The ID of the association.
+        alumni_id (str): The ID of the alumni.
+
+    Returns:
+        str: Success or error message.
+    """
+    try:
+        # Logic to update the database, such as setting an end date or marking as inactive
+        # This depends on your database schema
+        # Example:
+        sql_query = """
+            UPDATE is_cadre
+            SET end_date = CURRENT_DATE
+            WHERE association_id = %s AND alumni_id = %s AND end_date IS NULL;
+        """
+        # Execute the SQL query with association_id and alumni_id
+        # Make sure to use a proper query function (e.g., `query()` in your Flask app)
+        query(sql_query, (association_id, alumni_id))
+        
+        return "Cadre position ended successfully."
+    except Exception as e:
+        return f"Error: {str(e)}"

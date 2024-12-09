@@ -505,7 +505,181 @@ def list_association_members(association_id):
     except requests.RequestException as e:
         print("Error while fetching association members:", e)
         return {"status": "error", "message": str(e)}
+    
+def end_cadre(association_id, alumni_id):
+    """
+    End the cadre position of an alumni in an association.
+    Args:
+        association_id (int): Association ID.
+        alumni_id (int): Alumni ID.
+    Returns:
+        dict: JSON response containing success message or an error message.
+    """
+    print("Are you sure you want to end the cadre position? (y/n)")
+    choice = input("Enter your choice: ")
+    if choice.lower() != "y":
+        print("Ending cadre position cancelled.")
+        return {"status": "cancelled", "message": "Ending cadre position cancelled."}
+    url = f"{BASE_URL}/end_cadre/{association_id}/{alumni_id}"
+    try:
+        response = requests.post(url)
+        if response.status_code == 201:
+            # print("Cadre position ended successfully.")
+            return response.json()
+        elif response.status_code == 404:
+            # print("Association or alumni not found.")
+            return response.json()
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return {"status": "error", "message": "Unexpected error occurred."}
+    except requests.RequestException as e:
+        print("Error while ending cadre position:", e)
+        return {"status": "error", "message": str(e)}
+    
+def delete_event(association_id):
+    """
+    Function to interact with the server and delete an event.
+    """
+    #print("\n=== Delete an Event ===")
 
+    # User input for event details to delete
+    event_name = input("Enter event name: ")
+    date = input("Enter event date (YYYY-MM-DD): ")
+
+    event_data = {
+        "event_name": event_name,
+        "date": date
+    }
+
+    try:
+        response = requests.delete(f"{BASE_URL}/delete_event", json=event_data)  # 4 is a placeholder for association_id
+        response_data = response.json()
+
+        if response.status_code == 200:
+            print(f"Success: {response_data.get('message')}")
+        else:
+            print(f"Error: {response_data.get('message')} (Status Code: {response.status_code})")
+
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {str(e)}")
+        
+def add_event_participant():
+    """
+    Function to interact with the server and add a participant to an event.
+    """
+    print("\n=== Add Event Participant ===")
+
+    # User input for event participant details
+    alumni_id = input("Enter the participant's alumni ID: ")
+    event_name = input("Enter event name: ")
+    date = input("Enter event date (YYYY-MM-DD): ")
+
+    participant_data = {
+        "alumni_id": alumni_id,
+        "event_name": event_name,
+        "date": date
+    }
+
+    try:
+        response = requests.post(f"{BASE_URL}/add_event_participant", json=participant_data)
+        response_data = response.json()
+
+        if response.status_code == 201:
+            print(f"Success: {response_data.get('message')} (If the input in correct, the participant has been added to the event)")
+        else:
+            print(f"Error: {response_data.get('message')} (Status Code: {response.status_code})")
+
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {str(e)}")
+        
+def remove_event_participant():
+    """
+    Function to interact with the server and remove a participant from an event.
+    """
+    print("\n=== Remove Event Participant ===")
+
+    # User input for event participant details
+    alumni_id = input("Enter the alumni ID: ")
+    event_name = input("Enter event name: ")
+    date = input("Enter event date (YYYY-MM-DD): ")
+
+    participant_data = {
+        "alumni_id": alumni_id,
+        "event_name": event_name,
+        "date": date
+    }
+
+    try:
+        response = requests.delete(f"{BASE_URL}/remove_event_participant", json=participant_data)
+        response_data = response.json()
+
+        if response.status_code == 200:
+            print(f"Success: {response_data.get('message')}")
+        else:
+            print(f"Error: {response_data.get('message')} (Status Code: {response.status_code})")
+
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {str(e)}")    
+
+def add_cadre_to_association(association_id):
+    """
+    Function to interact with the server and add a user as a cadre to an association.
+    """
+    print("\n=== Add Other Cadre to Association ===")
+
+    # User input for cadre details
+    alumni_id = input("Enter the new cadre's alumni ID: ")
+    pos = input("Enter the position of the cadre: ")
+
+    cadre_data = {
+        "alumni_id": alumni_id,
+        "association_id": int(association_id),  # Ensure it's an integer
+        "position": pos
+    }
+
+    try:
+        response = requests.post(f"{BASE_URL}/add_cadre_to_association/{alumni_id}/{association_id}/{pos}", json=cadre_data)
+        response_data = response.json()
+
+        if response.status_code == 201:
+            print(f"Success: {response_data.get('message')}")
+        else:
+            print(f"Error: {response_data.get('message')} (Status Code: {response.status_code})")
+
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {str(e)}")
+        
+def get_donation(alumni_id):
+    """
+    Fetches alumni donation information from the server.
+
+    Args:
+        alumni_id (string): ID of the alumni to retrieve.
+
+    Returns:
+        dict: The response JSON containing alumni donation details or error message.
+    """
+    try:
+        # Construct the request URL
+        url = f"{BASE_URL}/get_alumni_donations/{alumni_id}"
+
+        # Send a GET request to the server
+        response = requests.get(url)
+
+        # Check the status code and handle response
+        if response.status_code == 200:
+            print("Alumni donation details retrieved successfully:")
+            return response.json()
+        elif response.status_code == 404:
+            print("Alumni not found.")
+            return response.json()
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return {"status": "error", "message": "Unexpected error occurred."}
+    except requests.RequestException as e:
+        # Handle any request exceptions (e.g., network issues)
+        print("Error while fetching alumni donation details:", e)
+        return {"status": "error", "message": str(e)}
 
 def alumni_operations():
     global ROLE, USER_ID, USER_NAME, ALUMNI_ID
@@ -602,12 +776,18 @@ def alumni_operations():
                 print("Edit Career functionality is under construction.")
 
         elif choice == "3":
-            print("\n=== Achievements ===")
-            print("Achievements functionality is under construction.")
+            print("\n=== Your Past Achievements ===")
+            
+            #print("Achievements functionality is under construction.")
 
         elif choice == "4":
             print("\n=== Donation ===")
-            print("Donation functionality is under construction.")
+            donation_details = get_donation(ALUMNI_ID)
+            if donation_details["status"] == "error":
+                print(f"Error: {donation_details['message']}")
+            else:
+                print(donation_details)
+            #print("Donation functionality is under construction.")
 
         elif choice == "5":
             print("\n=== Alumni Association ===")
@@ -737,7 +917,8 @@ def alumni_operations():
                             print("5. Delete an event")
                             print("6. Add a participant to an event")
                             print("7. Delete a participant from an event")
-                            print("8. Transfer the position of cadre")
+                            print("8. Add another alumni the Position of Cadre")
+                            print("9. Exit Cadre Position")
                             sub_choice = input("Enter your choice: ")
                             if sub_choice == "1":
                                 print("\n=== View Member List ===")
@@ -802,26 +983,31 @@ def alumni_operations():
                                 # print("This functionality is under construction.")
                             elif sub_choice == "5":
                                 print("\n=== Delete an Event ===")
+                                delete_event(association_id)
                                 #print("This functionality is under construction.")
                             elif sub_choice == "6":
                                 print("\n=== Add a Participant to an Event ===")
-                                print("This functionality is under construction.")
+                                add_event_participant()
+                                #print("This functionality is under construction.")
                             elif sub_choice == "7":
                                 print("\n=== Delete a Participant from an Event ===")
-                                print("This functionality is under construction.")
+                                remove_event_participant()
+                                #print("This functionality is under construction.")
                             elif sub_choice == "8":
                                 print(
                                     "\n=== Add another alumni the Position of Cadre ==="
                                 )
-                                print(
-                                    "This functionality allows you to assign cadre rights to someone else."
-                                )
+                                add_cadre_to_association(association_id)
+                                #print("This functionality is under construction.")
                             elif sub_choice == "9":
                                 print("\n=== Exit Cadre Position ===")
-                                print(
-                                    "This functionality allows you to resign from the cadre position."
-                                )
-
+                                response = end_cadre(association_id, ALUMNI_ID)
+                                if response["status"] == "error":
+                                    print(f"Error: {response['message']}")
+                                else:
+                                    print(response["message"])
+                                #print("This functionality is under construction.")
+                                
         elif choice == "6":
             print("Exiting alumni operations.")
             break  # 退出循環，結束操作
@@ -901,14 +1087,12 @@ def main():
                 print("Invalid role. Please try again.")
                 continue
 
-        elif choice == "0":  # Exit the program
+        elif choice == "4":  # Exit the program
             print("Exiting the program. Goodbye!")
             break
-
         else:  # Handle invalid input
             print("Invalid choice. Please select a valid option.")
             continue
-
 
 if __name__ == "__main__":
     main()

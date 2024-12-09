@@ -549,7 +549,7 @@ def update_alumni_career_history_endpoint(alumni_id):
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 201
 
-@app.route('/get_alumni_donations/<int:alumni_id>', methods=['GET'])
+@app.route('/get_alumni_donations/<string:alumni_id>', methods=['GET'])
 def get_alumni_donations_endpoint(alumni_id):
     """
     Retrieves donations made by an alumni.
@@ -560,6 +560,7 @@ def get_alumni_donations_endpoint(alumni_id):
     Returns:
         JSON with list of donations made by the alumni.
     """
+    # print(alumni_id)
     donations = get_alumni_donations(alumni_id)
     if donations["status"] == "error":
         return jsonify(donations), 404
@@ -1209,7 +1210,7 @@ def update_event_endpoint():
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 200
 
-@app.route('/delete_event/<int:association_id>', methods=['DELETE'])
+@app.route('/delete_event', methods=['DELETE'])
 def delete_event_endpoint():
     """
     Deletes an event.
@@ -1478,6 +1479,52 @@ def is_association_cadre_endpoint(alumni_id):
         return jsonify(cadre_status), 404
     
     return jsonify(cadre_status), 200
+
+@app.route('/end_cadre/<int:association_id>/<string:alumni_id>', methods=['POST'])
+def end_cadre_endpoint(association_id, alumni_id):
+    """
+    Ends the cadre position of an alumni in an association.
+
+    URL Parameters:
+        association_id (int): The ID of the association.
+        alumni_id (string): The ID of the alumni.
+
+    Returns:
+        JSON with a message indicating the result of the operation.
+    """
+    try:
+        # Call a function to end the cadre position
+        message = end_cadre(association_id, alumni_id)
+        
+        if "Error" in message:
+            return jsonify({"status": "error", "message": message}), 500
+        
+        return jsonify({"status": "success", "message": message}), 201
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route('/add_cadre_to_association/<string:alumni_id>/<int:association_id>/<string:pos>', methods=['POST'])
+def add_cadre_to_association_endpoint(alumni_id, association_id, pos):
+    """
+    Adds a cadre to an association.
+
+    URL Parameters:
+        alumni_id (string): The ID of the alumni.
+        association_id (int): The ID of the association.
+
+    Returns:
+        JSON with a message indicating the result of the operation.
+    """
+    # Call a function to add the cadre to the association
+    data = request.json
+    message = add_cadre_to_association(data)
+    
+    if "Error" in message:
+        return jsonify({"status": "error", "message": message}), 500
+    
+    return jsonify({"status": "success", "message": message}), 201
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
