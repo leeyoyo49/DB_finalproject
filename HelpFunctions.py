@@ -1573,3 +1573,119 @@ def get_participation_by_alumni(data):
         return {"status": "success", "events": events}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+    
+def list_user_associations(alumni_id):
+    """
+    Lists all associations a specific alumni belongs to.
+
+    Args:
+        alumni_id (str): Alumni ID.
+
+    Returns:
+        dict: List of associations or error message.
+    """
+    try:
+        # SQL query to fetch associations for the given alumni
+        sql_query = """
+            SELECT a.association_id, 
+                asso.association_name,
+                asso.address,
+                asso.phone,
+                asso.email,
+                asso.description
+            FROM is_member a
+            JOIN alumni_association asso ON a.association_id = asso.association_id
+            WHERE a.alumni_id = %s
+        """
+        # Execute the query
+        columns, results = query(sql_query, (alumni_id,))
+        
+        # Format results into a list of dictionaries
+        associations = [dict(zip(columns, row)) for row in results]
+        
+        # Return success response
+        return {"status": "success", "associations": associations}
+    except Exception as e:
+        # Handle errors and return an error response
+        return {"status": "error", "message": str(e)}
+    
+def list_user_association_events(alumni_id):
+    """
+    Lists all events organized by the associations a specific alumni belongs to.
+
+    Args:
+        alumni_id (str): Alumni ID.
+
+    Returns:
+        dict: List of events or error message.
+    """
+    try:
+        # SQL query to fetch events organized by associations the alumni belongs to
+        sql_query = """
+        SELECT DISTINCT ae.event_name, ae.date, ae.description, ae.location, asso.association_name
+        FROM association_event ae
+        JOIN held_by hb ON ae.event_name = hb.event_name AND ae.date = hb.date
+        JOIN is_member a ON hb.association_id = a.association_id
+        JOIN alumni_association asso ON a.association_id = asso.association_id
+        WHERE a.alumni_id = %s
+        ORDER BY ae.date DESC;
+        """
+        
+        # Execute the query
+        columns, results = query(sql_query, (alumni_id,))
+        
+        # Format results into a list of dictionaries
+        events = [dict(zip(columns, row)) for row in results]
+        
+        # Return success response
+        return {"status": "success", "events": events}
+    except Exception as e:
+        # Handle errors and return an error response
+        return {"status": "error", "message": str(e)}
+
+    
+def get_all_open_association():
+    """
+    Retrieves an association record.
+
+    Args:
+        association_id (int): Association ID.
+
+    Returns:
+        dict: Association details or error message.
+    """
+    try:
+        sql_query = "SELECT * FROM alumni_association"
+        columns, results = query(sql_query, ())
+        if not results:
+            return {"status": "error", "message": "Association not found"}
+
+        #association_details = dict(zip(columns, results))
+        #there are multiple associations
+        associations = [dict(zip(columns, row)) for row in results]
+        return {"status": "success", "association_details": associations}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+    
+def get_all_upcoming_events():
+    """
+    Retrieves an association record.
+
+    Args:
+        association_id (int): Association ID.
+
+    Returns:
+        dict: Association details or error message.
+    """
+    try:
+        sql_query = "SELECT * FROM association_event WHERE date >= NOW()"
+        columns, results = query(sql_query, ())
+        if not results:
+            return {"status": "error", "message": "Events not found"}
+
+        #association_details = dict(zip(columns, results))
+        #there are multiple associations
+        events = [dict(zip(columns, row)) for row in results]
+        return {"status": "success", "events": events}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
