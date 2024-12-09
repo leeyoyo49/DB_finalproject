@@ -1015,7 +1015,6 @@ def alumni_operations():
         else:
             print("Invalid choice, please try again.")
 
-<<<<<<< HEAD
 def insert_donation(alumni_id: str, amount: int, date: str, campaign_id = "Regular") -> bool:
     """
     insert the donation records to the server.
@@ -1271,8 +1270,6 @@ def delete_achievement(title: str, date: str, alumnileader_id: str) -> bool:
     except requests.RequestException as e:
         print("Error while deleting achievement details:", e)
         return False
-=======
->>>>>>> 8d64f84adfa8c6805b13d57756d2e5b4ff46127f
 
 def create_user(username: str, password: str, role: str, current_user: str):
     """
@@ -1374,6 +1371,53 @@ def add_alumni(username:str, first_name: str, last_name: str, sex: str, address:
         print(f"請求過程中發生錯誤：{e}")
         return False
 
+def update_user(user_id: str, admin_name: str, password: str, role: str) -> bool:
+    """
+    向伺服器發送請求更新用戶資料（僅限 Admin）。
+
+    參數:
+        user_id (int): 需要更新的用戶 ID。
+        admin_name (str): 新的用戶名稱。
+        password (str): 新的密碼。
+        role (str): 新的角色。
+
+    回傳:
+        bool: 如果更新成功，返回 True；如果更新失敗，返回 False。
+    """
+    try:
+        url = f"{BASE_URL}/update_user/{user_id}"
+
+        # 構建請求的資料，包含新的用戶資料
+        data = {
+            "admin_name": admin_name,
+            "password": password,
+            "role": role
+        }
+
+        # 發送 PUT 請求
+        response = requests.put(url, json=data)
+
+        # 根據伺服器回應的狀態碼處理結果
+        if response.status_code == 200:
+            print(f"用戶 ID {user_id} 資料更新成功。")
+            return True
+        elif response.status_code == 400:
+            print(f"錯誤：{response.json()['message']}")
+            return False
+        elif response.status_code == 403:
+            print(f"權限錯誤：{response.json()['message']}")
+            return False
+        elif response.status_code == 500:
+            print(f"伺服器錯誤：{response.json()['message']}")
+            return False
+        else:
+            print(f"發生了未知錯誤，狀態碼：{response.status_code}")
+            return False
+
+    except requests.RequestException as e:
+        print(f"請求過程中發生錯誤：{e}")
+        return False
+
 def delete_user(user_id: int, username: str) -> bool:
     """
     向伺服器發送請求刪除用戶。
@@ -1417,8 +1461,54 @@ def delete_user(user_id: int, username: str) -> bool:
         print(f"請求過程中發生錯誤：{e}")
         return False
 
+def update_user(user_id: int, username: str, password: str, role: str) -> bool:
+    """
+    向伺服器發送請求更新用戶資料（僅限 Admin）。
+
+    參數:
+        user_id (int): 需要更新的用戶 ID。
+        username (str): 新的用戶名稱。
+        password (str): 新的密碼。
+        role (str): 新的角色。
+
+    回傳:
+        bool: 如果更新成功，返回 True；如果更新失敗，返回 False。
+    """
+    try:
+        url = f"{BASE_URL}/update_user/{user_id}"
+
+        # 構建請求的資料，包含新的用戶資料
+        data = {
+            "username": username,
+            "password": password,
+            "role": role
+        }
+
+        # 發送 PUT 請求
+        response = requests.put(url, json=data)
+
+        # 根據伺服器回應的狀態碼處理結果
+        if response.status_code == 200:
+            print(f"用戶 ID {user_id} 資料更新成功。")
+            return True
+        elif response.status_code == 400:
+            print(f"錯誤：{response.json()['message']}")
+            return False
+        elif response.status_code == 403:
+            print(f"權限錯誤：{response.json()['message']}")
+            return False
+        elif response.status_code == 500:
+            print(f"伺服器錯誤：{response.json()['message']}")
+            return False
+        else:
+            print(f"發生了未知錯誤，狀態碼：{response.status_code}")
+            return False
+
+    except requests.RequestException as e:
+        print(f"請求過程中發生錯誤：{e}")
+        return False
+
 def admin_operations():
-<<<<<<< HEAD
     while True:
 
         # ********** Admin Interface **********
@@ -1507,14 +1597,40 @@ def admin_operations():
                     # 呼叫 add_alumni 函式
                     add_alumni(username, first_name, last_name, sex, address, graduation_year, user_id, phone)
             elif alumni_choice == '2':
-                pass
+                # 用戶輸入區域
+                user_id = input("輸入要更新的用戶 ID：")
+                password = input("輸入新的密碼：(無須變更請 Enter )")
+                role = input("輸入新的身分：(無須變更請 Enter )")
+                admin_name = input("輸入當前用戶名（必須是 Admin）：")
+
+                if password == "":
+                    password = None
+                if role == "":
+                    role = None
+
+                # 呼叫 update_user 函式
+                update_user(user_id, admin_name, password, role)
             elif alumni_choice == "3":
                 # 用戶輸入區域
-                user_id = int(input("輸入要刪除的用戶 ID："))
-                username = input("輸入你的用戶名：")
+                user_id = input("輸入要刪除的user_name：(通常為您的學號)")
+                username = input("輸入你的用戶名：(必須為Admin)")
 
                 # 呼叫 delete_user 函式
                 delete_user(user_id, username)
+        elif sub_choice == "3":
+            print("\n=== Alumni Association ===")
+            print("1: add")
+            print("2: Edit")
+            print("3: Delete")
+            print("==================")
+            association_choice = input("Enter your choice: ")
+
+            if association_choice == "1":
+                pass
+            elif association_choice == "2":
+                pass
+            elif association_choice == "3":
+                pass
         elif sub_choice == "4":
             print("\n=== Achievement ===")
             print("1. Insert")
@@ -1559,17 +1675,11 @@ def admin_operations():
                 # Call the delete function
                 delete_achievement(title, date, alumnileader_id)
                 
-=======
-    global ROLE, USER_ID, USER_NAME, ALUMNI_ID
-    """Admin-specific operations."""
-    print("\nAdmin operations can be implemented here.")
->>>>>>> 8d64f84adfa8c6805b13d57756d2e5b4ff46127f
 
 
 def analyst_operations():
     global ROLE, USER_ID, USER_NAME, ALUMNI_ID
-    """Analyst-specific operations."""
-    print("\nAnalyst operations can be implemented here.")
+    
 
 
 def main():

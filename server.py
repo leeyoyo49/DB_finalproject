@@ -192,7 +192,7 @@ def create_user_endpoint():
 
 
 
-@app.route('/delete_user/<int:user_id>', methods=['DELETE'])
+@app.route('/delete_user/<string:user_id>', methods=['DELETE'])
 def delete_user_endpoint(user_id):
     """
     Endpoint for deleting a user.
@@ -226,15 +226,16 @@ def delete_user_endpoint(user_id):
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 200
 
-@app.route('/update_user/<int:user_id>', methods=['PUT'])
+@app.route('/update_user/<string:user_id>', methods=['PUT'])
 def update_user_endpoint(user_id):
     """
     Endpoint for updating a user's details.
 
     Input JSON:
         {
-            "username": "updated_user",
-            "password": "new_password"
+            "admin_name": "updated_user",
+            "password": "new_password",
+            "role": "new_role"
         }
 
     Args:
@@ -245,12 +246,10 @@ def update_user_endpoint(user_id):
     """
     # check if the user is logged in
     data = request.json
-    username = data.get("username")
-    if username not in logged_in_users:
-        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
+    admin_name = data.get("admin_name")
     
     # Role check: only Admin can update users
-    has_permission, message = check_permissions(username, "Admin")
+    has_permission, message = check_permissions(admin_name, "Admin")
     if not has_permission:
         return jsonify({"status": "error", "message": message}), 403
     
