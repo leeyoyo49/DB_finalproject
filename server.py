@@ -167,11 +167,14 @@ def create_user_endpoint():
     Return JSON:
         {
             "status": "success",
-            "message": "用戶 b11705022 創建成功",
-            "user_id":"user_id"
+            "message": "用戶 b11705022 創建成功"
         }
     """
     data = request.json
+    username = data.get("username")
+    if username not in logged_in_users:
+        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
+    
     username = data.get("username")
     password = data.get("password")
     role = data.get("role")
@@ -188,11 +191,11 @@ def create_user_endpoint():
     if "Error" in result_message:
         return jsonify({"status": "error", "message": result_message}), 500
 
-    return jsonify({"status": "success", "message": int(result_message)}), 201
+    return jsonify({"status": "success", "message": result_message}), 201
 
 
 
-@app.route('/delete_user/<string:user_id>', methods=['DELETE'])
+@app.route('/delete_user/<int:user_id>', methods=['DELETE'])
 def delete_user_endpoint(user_id):
     """
     Endpoint for deleting a user.
@@ -226,16 +229,15 @@ def delete_user_endpoint(user_id):
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 200
 
-@app.route('/update_user/<string:user_id>', methods=['PUT'])
+@app.route('/update_user/<int:user_id>', methods=['PUT'])
 def update_user_endpoint(user_id):
     """
     Endpoint for updating a user's details.
 
     Input JSON:
         {
-            "admin_name": "updated_user",
-            "password": "new_password",
-            "role": "new_role"
+            "username": "updated_user",
+            "password": "new_password"
         }
 
     Args:
@@ -246,10 +248,12 @@ def update_user_endpoint(user_id):
     """
     # check if the user is logged in
     data = request.json
-    admin_name = data.get("admin_name")
+    username = data.get("username")
+    if username not in logged_in_users:
+        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
     
     # Role check: only Admin can update users
-    has_permission, message = check_permissions(admin_name, "Admin")
+    has_permission, message = check_permissions(username, "Admin")
     if not has_permission:
         return jsonify({"status": "error", "message": message}), 403
     
@@ -404,7 +408,7 @@ def add_alumni_endpoint():
         JSON with status and message.
     """
     data = request.json
-    if not data or not all(k in data for k in ['alumni_id', 'first_name', 'last_name', 'sex', 'address', 'graduation_year', 'user_id', 'phone']):
+    if not data or not all(k in data for k in ['first_name', 'last_name', 'sex', 'address', 'graduation_year', 'user_id', 'phone']):
         return jsonify({"status": "error", "message": "Missing required fields"}), 400
 
     message = add_alumni(data)
@@ -471,40 +475,6 @@ def delete_alumni_endpoint(alumni_id):
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 200
 
-@app.route('/find_alumni_by_name', methods=['GET'])
-def find_alumni_by_name_endpoint():
-    """
-    Finds alumni by name.
-
-    Query Parameters:
-        - name (str): The name to search for (e.g., "John").
-
-    Example URL:
-        /find_alumni_by_name?name=John
-
-    Returns:
-        JSON with list of alumni that match the name.
-    """
-    name = request.args.get('name')
-    if not name:
-        return jsonify({"status": "error", "message": "Missing name parameter"}), 400
-
-    alumni_list = find_alumni_by_name(name)
-    return jsonify(alumni_list), 200
-
-@app.route('/get_alumni_by_graduation_year/<int:year>', methods=['GET'])
-def get_alumni_by_graduation_year_endpoint(year):
-    """
-    Retrieves alumni by graduation year.
-
-    Args:
-        year (int): Graduation year of alumni to retrieve (e.g., 2020).
-
-    Returns:
-        JSON with list of alumni for the specified graduation year.
-    """
-    alumni_list = get_alumni_by_graduation_year(year)
-    return jsonify(alumni_list), 200
 
 @app.route('/list_alumni', methods=['GET'])
 def list_alumni_endpoint():
@@ -517,33 +487,6 @@ def list_alumni_endpoint():
     alumni_list = list_alumni()
     return jsonify(alumni_list), 200
 
-@app.route('/update_alumni_career_history/<int:alumni_id>', methods=['POST'])
-def update_alumni_career_history_endpoint(alumni_id):
-    """
-    Updates career history for an alumni.
-
-    Input JSON:
-        {
-            "job_title": "Software Engineer",
-            "company": "Tech Corp",
-            "start_date": "2021-01-15",
-            "end_date": "2023-06-30"  // Optional
-        }
-
-    Args:
-        alumni_id (int): ID of the alumni whose career history is being updated.
-
-    Returns:
-        JSON with status and message.
-    """
-    career_data = request.json
-    if not career_data or not all(k in career_data for k in ['job_title', 'company', 'start_date']):
-        return jsonify({"status": "error", "message": "Missing required career fields"}), 400
-
-    message = update_alumni_career_history(alumni_id, career_data)
-    if "Error" in message:
-        return jsonify({"status": "error", "message": message}), 500
-    return jsonify({"status": "success", "message": message}), 201
 
 @app.route('/get_alumni_donations/<string:alumni_id>', methods=['GET'])
 def get_alumni_donations_endpoint(alumni_id):
@@ -670,38 +613,6 @@ def get_career_history_endpoint(career_id):
     return jsonify(career_details), 200
 
 # Career Analysis Endpoints
-
-@app.route('/get_salary_trends', methods=['GET'])
-def get_salary_trends_endpoint():
-    """
-    Retrieves salary trends for a given department over a specific year range.
-
-    Query Parameters:
-        - department (str): The name of the department (e.g., "Computer Science").
-        - start_year (str): The start year for the range (e.g., "2015").
-        - end_year (str): The end year for the range (e.g., "2023").
-
-    Example URL:
-        /get_salary_trends?department=Computer%20Science&start_year=2015&end_year=2023
-
-    Returns:
-        JSON with salary trends data.
-    """
-    department = request.args.get('department')
-    start_year = request.args.get('start_year')
-    end_year = request.args.get('end_year')
-
-    if not department or not start_year or not end_year:
-        return jsonify({"status": "error", "message": "Missing required parameters"}), 400
-
-    try:
-        year_range = (int(start_year), int(end_year))
-    except ValueError:
-        return jsonify({"status": "error", "message": "Invalid year format"}), 400
-
-    salary_trends = get_salary_trends(department, year_range)
-    return jsonify(salary_trends), 200
-
 @app.route('/get_career_paths/<string:alumni_id>', methods=['GET'])
 def get_career_paths_endpoint(alumni_id):
     """
@@ -807,7 +718,6 @@ def get_donation_endpoint(donation_id):
     return jsonify(donation_details), 200
 
 # Donation Analysis Endpoints
-
 @app.route('/get_total_donations_by_alumni/<int:alumni_id>', methods=['GET'])
 def get_total_donations_by_alumni_endpoint(alumni_id):
     """
@@ -926,7 +836,7 @@ def update_achievement_endpoint():
     return jsonify({"status": "success", "message": message}), 200
 
 @app.route('/delete_achievement', methods=['DELETE'])
-def delete_achievement_endpoint():
+def delete_achievement_endpoint(achievement_id):
     """
     Deletes an achievement record.
 
@@ -963,7 +873,7 @@ def get_achievement_endpoint(achievement_id):
         return jsonify(achievement_details), 404
     return jsonify(achievement_details), 200
 
-@app.route('/list_achievements/<int:alumni_id>', methods=['GET'])
+@app.route('/list_achievements/<string:alumni_id>', methods=['GET'])
 def list_achievements_endpoint(alumni_id):
     """
     Lists all achievements for an alumni.

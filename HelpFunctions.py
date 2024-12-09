@@ -742,9 +742,11 @@ def get_donation(donation_id):
         if not results:
             return {"status": "error", "message": "Donation not found"}
 
-        donation_details = dict(zip(columns, results))
+        #donation_details = dict(zip(columns, results))
+        donation_details = [dict(zip(columns, row)) for row in results]
+        #career_paths = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "donation_details": donation_details}
-    except Exception as e:
+    except Exception as e: 
         return {"status": "error", "message": str(e)}
 
 # Donation Analysis Functions
@@ -924,7 +926,15 @@ def list_achievements(alumni_id):
         dict: List of achievements or error message.
     """
     try:
-        sql_query = "SELECT * FROM achievement WHERE alumni_id = %s"
+        sql_query = """
+        SELECT achievement.title, achievement.date, achieve.*
+        FROM achievement
+        JOIN achieve 
+            ON achievement.alumnileader_id = achieve.alumnileader_id
+            AND achievement.title = achieve.title
+            AND achievement.date = achieve.date
+        WHERE achieve.alumni_id = %s;
+        """
         columns, results = query(sql_query, (alumni_id,))
         achievements = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "achievements": achievements}
