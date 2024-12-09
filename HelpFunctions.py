@@ -1020,8 +1020,9 @@ def get_association(association_id):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-# Membership Management Functions
-def add_member_to_association(alumni_id, association_id, data):
+from datetime import datetime
+
+def add_member_to_association(alumni_id, association_id):
     """
     Adds a member to an association.
 
@@ -1032,15 +1033,21 @@ def add_member_to_association(alumni_id, association_id, data):
     Returns:
         str: Success or error message.
     """
+    #print("got here")
+
     try:
+        # Get the current date in 'YYYY-MM-DD' format
+        today_date = datetime.today().strftime('%Y-%m-%d')
+
         sql_query = """
-            INSERT INTO is_member (alumni_id, association_id, date_joined)
-            VALUES (%s, %s, %s)
+            INSERT INTO is_member (alumni_id, association_id, join_date)
+            VALUES (%s, %s, %s);
         """
-        query(sql_query, (alumni_id, association_id, data['date_joined']))
+        query(sql_query, (alumni_id, association_id, today_date))
         return "Member added to association successfully."
     except Exception as e:
         return f"Error: {str(e)}"
+
 
 def remove_member_from_association(alumni_id, association_id):
     """
@@ -1141,7 +1148,7 @@ def update_event(association_id, event_data):
     except Exception as e:
         return f"Error: {str(e)}"
 
-def delete_event(event_id, data):
+def delete_event(data):
     """
     Deletes an event.
 
@@ -1154,6 +1161,8 @@ def delete_event(event_id, data):
     """
     try:
         sql_query = "DELETE FROM association_event WHERE event_name = %s AND date = %s"
+        query(sql_query, (data['event_name'],data['date']))
+        sql_query = "DELETE FROM held_by WHERE event_name = %s AND date = %s"
         query(sql_query, (data['event_name'],data['date']))
         return "Event deleted successfully."
     except Exception as e:
@@ -1177,65 +1186,6 @@ def list_events_by_association(association_id):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-# Alumni Association Management Functions
-
-# Association CRUD Functions
-def create_association(data):
-    """
-    Creates a new association.
-
-    Args:
-        data (dict): Association details.
-
-    Returns:
-        str: Success or error message.
-    """
-    try:
-        sql_query = """
-            INSERT INTO association (name, description, created_date)
-            VALUES (%s, %s, %s)
-        """
-        query(sql_query, (data['name'], data['description'], data['created_date']))
-        return "Association created successfully."
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-def update_association(association_id, data):
-    """
-    Updates an association record.
-
-    Args:
-        association_id (int): Association ID.
-        data (dict): Association details to update.
-
-    Returns:
-        str: Success or error message.
-    """
-    try:
-        updates = ", ".join(f"{key} = %s" for key in data.keys())
-        sql_query = f"UPDATE association SET {updates} WHERE association_id = %s"
-        query(sql_query, (*data.values(), association_id))
-        return "Association updated successfully."
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-def delete_association(association_id):
-    """
-    Deletes an association.
-
-    Args:
-        association_id (int): Association ID.
-
-    Returns:
-        str: Success or error message.
-    """
-    try:
-        sql_query = "DELETE FROM association WHERE association_id = %s"
-        query(sql_query, (association_id,))
-        return "Association deleted successfully."
-    except Exception as e:
-        return f"Error: {str(e)}"
-
 def get_association(association_id):
     """
     Retrieves an association record.
@@ -1257,28 +1207,6 @@ def get_association(association_id):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-# Membership Management Functions
-def add_member_to_association(alumni_id, association_id):
-    """
-    Adds a member to an association.
-
-    Args:
-        alumni_id (int): Alumni ID.
-        association_id (int): Association ID.
-
-    Returns:
-        str: Success or error message.
-    """
-    try:
-        sql_query = """
-            INSERT INTO association_membership (alumni_id, association_id)
-            VALUES (%s, %s)
-        """
-        query(sql_query, (alumni_id, association_id))
-        return "Member added to association successfully."
-    except Exception as e:
-        return f"Error: {str(e)}"
-
 def remove_member_from_association(alumni_id, association_id):
     """
     Removes a member from an association.
@@ -1291,7 +1219,7 @@ def remove_member_from_association(alumni_id, association_id):
         str: Success or error message.
     """
     try:
-        sql_query = "DELETE FROM association_membership WHERE alumni_id = %s AND association_id = %s"
+        sql_query = "DELETE FROM is_member WHERE alumni_id = %s AND association_id = %s"
         query(sql_query, (alumni_id, association_id))
         return "Member removed from association successfully."
     except Exception as e:
@@ -1309,8 +1237,8 @@ def list_association_members(association_id):
     """
     try:
         sql_query = """
-            SELECT a.alumni_id, al.first_name, al.last_name
-            FROM association_membership a
+            SELECT a.alumni_id, al.first_name, al.last_name, al.phone
+            FROM is_member a
             JOIN alumni al ON a.alumni_id = al.alumni_id
             WHERE a.association_id = %s
         """
@@ -1320,67 +1248,6 @@ def list_association_members(association_id):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-# Event Management Functions
-def create_event(association_id, event_data):
-    """
-    Creates an event for an association.
-
-    Args:
-        association_id (int): Association ID.
-        event_data (dict): Event details.
-
-    Returns:
-        str: Success or error message.
-    """
-    try:
-        sql_query = """
-            INSERT INTO association_event (association_id, title, description, event_date)
-            VALUES (%s, %s, %s, %s)
-        """
-        query(sql_query, (
-            association_id, event_data['title'], event_data['description'], event_data['event_date']
-        ))
-        return "Event created successfully."
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-def update_event(data):
-    """
-    Updates an event record.
-
-    Args:
-        data (dict): Event details to update.
-
-    Returns:
-        str: Success or error message.
-    """
-    try:
-        updates = ", ".join(f"{key} = %s" for key in data.keys() if key not in ['title', 'event_date'])
-        sql_query = f"UPDATE association_event SET {updates} WHERE title = %s AND event_date = %s"
-        data['event_date'] = data.pop('event_date')
-        data['title'] = data.pop('title')
-        query(sql_query, (*data.values(), data['title'], data['event_date']))
-        return "Event updated successfully."
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-def delete_event(data):
-    """
-    Deletes an event.
-
-    Args:
-        event_name (int): Event name,
-        date (str): Event date in YYYY-MM-DD format.
-    
-    Returns:
-        str: Success or error message.
-    """
-    try:
-        sql_query = "DELETE FROM association_event WHERE event_name = %s AND date = %s"
-        query(sql_query, (data['event_name'],data['date']))
-        return "Event deleted successfully."
-    except Exception as e:
-        return f"Error: {str(e)}"
 
 def list_events_by_association(association_id):
     """
@@ -1699,3 +1566,88 @@ def get_all_upcoming_events():
         return {"status": "success", "events": events}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+    
+    
+def is_association_cadre(alumni_id):
+    """
+    Return a list of associations that the alumni is a cadre of. Store the association and position.
+    If the alumni is not a cadre of any association, return an empty list.
+    
+    Args:
+        alumni_id (int): Alumni ID.
+        
+    Returns:
+        dict: List of associations or error message.
+    """
+    try:
+        # SQL query to fetch associations for the given alumni
+        sql_query = """
+            SELECT a.association_id, 
+                a.position,
+                asso.association_name
+            FROM is_cadre a
+            JOIN alumni_association asso ON a.association_id = asso.association_id
+            WHERE a.alumni_id = %s AND (a.end_date IS NULL OR a.end_date > CURRENT_DATE);
+        """
+        # Execute the query
+        columns, results = query(sql_query, (alumni_id,))
+        
+        # Format results into a list of dictionaries
+        associations = [dict(zip(columns, row)) for row in results]
+        
+        # Return success response
+        return {"status": "success", "associations": associations}
+    except Exception as e:
+        # Handle errors and return an error response
+        return {"status": "error", "message": str(e)}
+
+
+def add_cadre_to_association(data):
+    """
+    Adds a cadre to an association.
+
+    Args:
+        alumni_id (int): Alumni ID.
+        association_id (int): Association ID.
+        position (str): Cadre position.
+
+    Returns:
+        str: Success or error message.
+    """
+    try:
+        sql_query = """
+            INSERT INTO is_cadre (alumni_id, association_id, position, start_date)
+            VALUES (%s, %s, %s, CURRENT_DATE)
+        """
+        query(sql_query, (data['alumni_id'], data['association_id'], data['position']))
+        return "Cadre added to association successfully."
+    except Exception as e:
+        return f"Error: {str(e)}"
+    
+def end_cadre(association_id, alumni_id):
+    """
+    Logic to end the cadre position of an alumni in an association.
+
+    Args:
+        association_id (int): The ID of the association.
+        alumni_id (str): The ID of the alumni.
+
+    Returns:
+        str: Success or error message.
+    """
+    try:
+        # Logic to update the database, such as setting an end date or marking as inactive
+        # This depends on your database schema
+        # Example:
+        sql_query = """
+            UPDATE is_cadre
+            SET end_date = CURRENT_DATE
+            WHERE association_id = %s AND alumni_id = %s AND end_date IS NULL;
+        """
+        # Execute the SQL query with association_id and alumni_id
+        # Make sure to use a proper query function (e.g., `query()` in your Flask app)
+        query(sql_query, (association_id, alumni_id))
+        
+        return "Cadre position ended successfully."
+    except Exception as e:
+        return f"Error: {str(e)}"
