@@ -599,7 +599,6 @@ def alumni_operations():
             elif sub_choice == "2":
                 print("\n=== Edit Career ===")
                 # 這裡可以實現編輯事業資料功能
-                add_job(ALUMNI_ID)
                 print("Edit Career functionality is under construction.")
 
         elif choice == "3":
@@ -607,17 +606,11 @@ def alumni_operations():
             print("Achievements functionality is under construction.")
 
         elif choice == "4":
-            print("\n=== Your Donation History ===")
+            print("\n=== Donation ===")
+            print("Donation functionality is under construction.")
 
         elif choice == "5":
             print("\n=== Alumni Association ===")
-            print("1. View your affiliated association")
-            print("2. View your association events")
-            print("3. View all alumni associations")
-            print("4. View all upcoming events")
-            print("5. Join an alumni association event")
-            print("6. Join an alumni association")
-            print("7. I am a cadre of the alumni association")
             print("Alumni Association functionality is under construction.")
 
             sub_choice = input("Enter your choice: ")

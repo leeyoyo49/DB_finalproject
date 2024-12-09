@@ -668,7 +668,7 @@ def record_donation(alumni_id, donation_data):
             VALUES (%s, %s, %s, %s)
         """
         query(sql_query, (
-            alumni_id, donation_data['amount'], donation_data['date'], donation_data.get('donation_type')
+            alumni_id, donation_data['amount'], donation_data['date'], donation_data['donation_type']
         ))
         return "Donation recorded successfully."
     except Exception as e:
@@ -715,18 +715,18 @@ def get_donation(donation_id):
     Retrieves a donation record.
 
     Args:
-        donation_id (int): Donation ID.
+        donation_id (string): Donation ID.
 
     Returns:
         dict: Donation details or error message.
     """
     try:
-        sql_query = "SELECT * FROM donation WHERE donation_id = %s"
+        sql_query = "SELECT * FROM donation WHERE alumni_id = %s"
         columns, results = query(sql_query, (donation_id,))
         if not results:
             return {"status": "error", "message": "Donation not found"}
 
-        donation_details = dict(zip(columns, results[0]))
+        donation_details = dict(zip(columns, results))
         return {"status": "success", "donation_details": donation_details}
     except Exception as e:
         return {"status": "error", "message": str(e)}
@@ -814,7 +814,7 @@ def add_achievement(achievement_data):
     """
     try:
         sql_query = """
-            INSERT INTO achievement (title, description, date, category, alumnileader_id)
+            INSERT INTO achievement (alumnileader_id, title, description, date, category)
             VALUES (%s, %s, %s, %s, %s)
         """
         query(sql_query, (
@@ -837,12 +837,13 @@ def update_achievement(data):
         str: Success or error message.
     """
     try:
-        updates = ", ".join(f"{key} = %s" for key in data.keys() if key not in ['title', 'date', 'alumnileader_id'])
+        updates = ", ".join(f"{key} = %s" for key in data.keys() if key!= 'alumnileader_id' and key!= 'date' and key!= 'title')
+        
         sql_query = f"UPDATE achievement SET {updates} WHERE title = %s AND date = %s AND alumnileader_id = %s"
-        data['alumnileader_id'] = data.pop('alumnileader_id')
-        data['date'] = data.pop('date')
-        data['title'] = data.pop('title')
-        query(sql_query, (*data.values(), data['title'], data['date'], data['alumnileader_id']))
+        alumnileader_id = data.pop('alumnileader_id')
+        date = data.pop('date')
+        title = data.pop('title')
+        query(sql_query, (*data.values(), title, date, alumnileader_id))
         return "Achievement updated successfully."
     except Exception as e:
         return f"Error: {str(e)}"
