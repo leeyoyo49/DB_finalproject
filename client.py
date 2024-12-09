@@ -781,12 +781,19 @@ def alumni_operations():
             #print("Achievements functionality is under construction.")
 
         elif choice == "4":
-            print("\n=== Donation ===")
+            print("\n=== Your Donation ===")
             donation_details = get_donation(ALUMNI_ID)
             if donation_details["status"] == "error":
                 print(f"Error: {donation_details['message']}")
             else:
-                print(donation_details)
+                for i in range(len(donation_details["donation_details"])):
+                    print(f"=== Donation {i+1} ===")
+                    for key, value in donation_details["donation_details"][i].items():
+                        key_print = key.replace("_", " ").capitalize()
+                        if key_print == "Alumni id":
+                            continue
+                            key_print = "Alumni ID (User Name)"
+                        print(f"{key_print}: {value}")
             #print("Donation functionality is under construction.")
 
         elif choice == "5":
@@ -1693,7 +1700,7 @@ def main():
         display_main_menu()
 
         # Prompt the user to select an option
-        choice = input("Login as (1: Alumni, 2: Admin, 3: Analyst, 0: Exit): ").strip()
+        choice = input("Login as (1: Alumni, 2: Admin, 3: Analyst, 4: Exit): ").strip()
 
         if choice == "1":  # Alumni login
             role, user_id, user_name = login()

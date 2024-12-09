@@ -742,7 +742,9 @@ def get_donation(donation_id):
         if not results:
             return {"status": "error", "message": "Donation not found"}
 
-        donation_details = dict(zip(columns, results))
+        #donation_details = dict(zip(columns, results))
+        donation_details = [dict(zip(columns, row)) for row in results]
+        #career_paths = [dict(zip(columns, row)) for row in results]
         return {"status": "success", "donation_details": donation_details}
     except Exception as e:
         return {"status": "error", "message": str(e)}
