@@ -167,14 +167,11 @@ def create_user_endpoint():
     Return JSON:
         {
             "status": "success",
-            "message": "用戶 b11705022 創建成功"
+            "message": "用戶 b11705022 創建成功",
+            "user_id":"user_id"
         }
     """
     data = request.json
-    username = data.get("username")
-    if username not in logged_in_users:
-        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
-    
     username = data.get("username")
     password = data.get("password")
     role = data.get("role")
@@ -191,11 +188,11 @@ def create_user_endpoint():
     if "Error" in result_message:
         return jsonify({"status": "error", "message": result_message}), 500
 
-    return jsonify({"status": "success", "message": result_message}), 201
+    return jsonify({"status": "success", "message": int(result_message)}), 201
 
 
 
-@app.route('/delete_user/<int:user_id>', methods=['DELETE'])
+@app.route('/delete_user/<string:user_id>', methods=['DELETE'])
 def delete_user_endpoint(user_id):
     """
     Endpoint for deleting a user.
@@ -229,15 +226,16 @@ def delete_user_endpoint(user_id):
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 200
 
-@app.route('/update_user/<int:user_id>', methods=['PUT'])
+@app.route('/update_user/<string:user_id>', methods=['PUT'])
 def update_user_endpoint(user_id):
     """
     Endpoint for updating a user's details.
 
     Input JSON:
         {
-            "username": "updated_user",
-            "password": "new_password"
+            "admin_name": "updated_user",
+            "password": "new_password",
+            "role": "new_role"
         }
 
     Args:
@@ -248,12 +246,10 @@ def update_user_endpoint(user_id):
     """
     # check if the user is logged in
     data = request.json
-    username = data.get("username")
-    if username not in logged_in_users:
-        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
+    admin_name = data.get("admin_name")
     
     # Role check: only Admin can update users
-    has_permission, message = check_permissions(username, "Admin")
+    has_permission, message = check_permissions(admin_name, "Admin")
     if not has_permission:
         return jsonify({"status": "error", "message": message}), 403
     
@@ -408,7 +404,7 @@ def add_alumni_endpoint():
         JSON with status and message.
     """
     data = request.json
-    if not data or not all(k in data for k in ['first_name', 'last_name', 'sex', 'address', 'graduation_year', 'user_id', 'phone']):
+    if not data or not all(k in data for k in ['alumni_id', 'first_name', 'last_name', 'sex', 'address', 'graduation_year', 'user_id', 'phone']):
         return jsonify({"status": "error", "message": "Missing required fields"}), 400
 
     message = add_alumni(data)
@@ -930,7 +926,7 @@ def update_achievement_endpoint():
     return jsonify({"status": "success", "message": message}), 200
 
 @app.route('/delete_achievement', methods=['DELETE'])
-def delete_achievement_endpoint(achievement_id):
+def delete_achievement_endpoint():
     """
     Deletes an achievement record.
 

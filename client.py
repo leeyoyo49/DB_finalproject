@@ -1015,17 +1015,671 @@ def alumni_operations():
         else:
             print("Invalid choice, please try again.")
 
+def insert_donation(alumni_id: str, amount: int, date: str, campaign_id = "Regular") -> bool:
+    """
+    insert the donation records to the server.
+
+    Args:
+        alumni_id (string): ID of the alumni.
+
+    Returns:
+        JSON with status and message.
+    """
+    data = {
+        "amount": amount,
+        "date": date,
+        "donation_type": campaign_id    
+    }
+    try:
+        url = f"{BASE_URL}/record_donation/{alumni_id}"
+        response = requests.post(url, json=data)
+        if response.status_code == 201:
+            print("Success")
+            return True
+        elif response.status_code == 500:
+            print("Error")
+            return False
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return False
+    except requests.RequestException as e:
+        print("Error while fetching alumni details:", e)
+        return False
+        
+def update_donation(donation_id: int, amount: int, date: str) -> bool:
+    """
+    Update a donation record on the server.
+
+    Args:
+        donation_id (int): ID of the donation to update.
+        amount (int): The new donation amount.
+        date (str): The new donation date in 'YYYY-MM-DD' format.
+
+    Returns:
+        bool: True if the update was successful, False otherwise.
+    """
+    data = {
+        "amount": amount,
+        "date": date
+    }
+    try:
+        url = f"{BASE_URL}/update_donation/{donation_id}"
+        response = requests.put(url, json=data)
+        
+        if response.status_code == 200:
+            print("Update successful.")
+            return True
+        elif response.status_code == 400:
+            print("Error: Invalid or missing data.")
+            return False
+        elif response.status_code == 500:
+            print("Server error occurred while updating the donation.")
+            return False
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return False
+
+    except requests.RequestException as e:
+        print("Error while updating donation details:", e)
+        return False
+
+def delete_donation(donation_id: int) -> bool:
+    """
+    Deletes a donation record on the server.
+
+    Args:
+        donation_id (int): ID of the donation to delete.
+
+    Returns:
+        bool: True if the deletion was successful, False otherwise.
+    """
+    try:
+        url = f"{BASE_URL}/delete_donation/{donation_id}"
+        response = requests.delete(url)
+        
+        if response.status_code == 200:
+            print("Donation deleted successfully.")
+            return True
+        elif response.status_code == 404:
+            print("Error: Donation not found.")
+            return False
+        elif response.status_code == 500:
+            print("Server error occurred while deleting the donation.")
+            return False
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return False
+
+    except requests.RequestException as e:
+        print("Error while deleting donation:", e)
+        return False
+
+def get_donation(donation_id: str) -> dict:
+    """
+    Retrieves a donation record from the server.
+
+    Args:
+        donation_id (int): ID of the donation to retrieve.
+
+    Returns:
+        dict: A dictionary containing donation details or error message.
+    """
+    try:
+        url = f"{BASE_URL}/get_donation/{donation_id}"
+        response = requests.get(url)
+        
+        if response.status_code == 200:
+            # 如果請求成功，返回捐款資料
+            return response.json()
+        elif response.status_code == 404:
+            # 找不到捐款紀錄時
+            print("Donation not found.")
+            return {"status": "error", "message": "Donation not found"}
+        else:
+            # 處理其他錯誤
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return {"status": "error", "message": f"Unexpected error occurred. Status code: {response.status_code}"}
+    
+    except requests.RequestException as e:
+        print(f"Error while fetching donation details: {e}")
+        return {"status": "error", "message": str(e)}
+
+def add_achievement(alumni_id: str, title: str, description: str, date: str, category: str) -> bool:
+    """
+    Adds an achievement for the specified alumni.
+
+    Args:
+        alumni_id (int): ID of the alumni receiving the achievement.
+        title (str): The title of the achievement.
+        description (str): A description of the achievement.
+        date (str): The date of the achievement in 'YYYY-MM-DD' format.
+        category (str): The category of the achievement (e.g., 'Academic').
+
+    Returns:
+        bool: True if the achievement was added successfully, False otherwise.
+    """
+    data = {
+        "title": title,
+        "description": description,
+        "date": date,
+        "category": category
+    }
+    
+    try:
+        url = f"{BASE_URL}/add_achievement/{alumni_id}"
+        response = requests.post(url, json=data)
+        
+        if response.status_code == 201:
+            print("Achievement added successfully.")
+            return True
+        elif response.status_code == 400:
+            print("Error: Missing required fields.")
+            return False
+        elif response.status_code == 500:
+            print("Server error occurred while adding the achievement.")
+            return False
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return False
+
+    except requests.RequestException as e:
+        print(f"Error while adding achievement: {e}")
+        return False
+
+def update_achievement(alumnileader_id: str, title: str, date: str, 
+                       new_description: str = None, new_category: str = None) -> bool:
+    """
+    Update an achievement record on the server.
+
+    Args:
+        achievement_id (int): ID of the achievement to update.
+        title (str, optional): The new title of the achievement.
+        date (str, optional): The new date of the achievement in 'YYYY-MM-DD' format.
+
+    Returns:
+        bool: True if the update was successful, False otherwise.
+    """
+    # Prepare the data to be updated, only include fields that are provided
+    data = {
+        "alumnileader_id": alumnileader_id,
+        "title": title,
+        "date": date,
+        "description": new_description,
+        "category": new_category
+    }
+
+    try:
+        url = f"{BASE_URL}/update_achievement"
+        response = requests.put(url, json=data)
+        
+        if response.status_code == 200:
+            print("Update successful.")
+            return True
+        elif response.status_code == 400:
+            print("Error: Missing or invalid data.")
+            return False
+        elif response.status_code == 500:
+            print("Server error occurred while updating the achievement.")
+            return False
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return False
+
+    except requests.RequestException as e:
+        print("Error while updating achievement details:", e)
+        return False
+    
+def delete_achievement(title: str, date: str, alumnileader_id: str) -> bool:
+    """
+    Delete an achievement record on the server.
+
+    Args:
+        title (str): Title of the achievement to delete.
+        date (str): Date of the achievement to delete.
+        alumnileader_id (str): Alumnileader ID associated with the achievement.
+
+    Returns:
+        bool: True if the deletion was successful, False otherwise.
+    """
+    try:
+        url = f"{BASE_URL}/delete_achievement"
+        
+        # Preparing the data to send in the body
+        data = {
+            "title": title,
+            "date": date,
+            "alumnileader_id": alumnileader_id
+        }
+
+        # Sending the DELETE request with the JSON body
+        response = requests.delete(url, json=data)
+
+        if response.status_code == 200:
+            print("Deletion successful.")
+            return True
+        elif response.status_code == 404:
+            print("Error: Achievement not found.")
+            return False
+        elif response.status_code == 500:
+            print("Server error occurred while deleting the achievement.")
+            return False
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return False
+
+    except requests.RequestException as e:
+        print("Error while deleting achievement details:", e)
+        return False
+
+def create_user(username: str, password: str, role: str, current_user: str):
+    """
+    向伺服器發送請求創建新用戶（僅限 Admin）。
+
+    參數:
+        username (str): 要創建的用戶名。
+        password (str): 用戶的密碼。
+        role (str): 用戶的角色（例如，"Admin" 或其他角色）。
+        current_user (str): 發送請求的當前用戶名，該用戶必須擁有 Admin 權限。
+
+    回傳:
+        bool: 如果創建成功，返回 True；如果創建失敗，返回 False。
+    """
+    try:
+        url = f"{BASE_URL}/create_user"
+
+        # 構建請求的資料，包含 username, password, role, current_user
+        data = {
+            "username": username,
+            "password": password,
+            "role": role,
+            "current_user": current_user
+        }
+
+        # 發送 POST 請求
+        response = requests.post(url, json=data)
+
+        # 根據伺服器回應的狀態碼處理結果
+        if response.status_code == 201:
+            print(f"用戶 {username} 創建成功。")
+            return response.json()['message']
+        elif response.status_code == 400:
+            print(f"錯誤：{response.json()['message']}")
+            return response.json()['message']
+        elif response.status_code == 403:
+            print(f"錯誤：{response.json()['message']}")
+            return response.json()['message']
+        elif response.status_code == 500:
+            print(f"伺服器錯誤：{response.json()['message']}")
+            return response.json()['message']
+        else:
+            print(f"發生了未知錯誤，狀態碼：{response.status_code}")
+            return "Unknown error"
+
+    except requests.RequestException as e:
+        print(f"請求過程中發生錯誤：{e}")
+        return False
+
+def add_alumni(username:str, first_name: str, last_name: str, sex: str, address: str, graduation_year: int, user_id: int, phone: str) -> bool:
+    """
+    向伺服器發送請求新增校友記錄。
+
+    參數:
+        first_name (str): 校友的名字。
+        last_name (str): 校友的姓氏。
+        sex (str): 校友的性別（例如，"M" 或 "F"）。
+        address (str): 校友的地址。
+        graduation_year (int): 校友的畢業年份。
+        user_id (int): 該校友對應的用戶 ID。
+        phone (str): 校友的電話號碼。
+
+    回傳:
+        bool: 如果新增成功，返回 True；如果新增失敗，返回 False。
+    """
+    try:
+        url = f"{BASE_URL}/add_alumni"
+
+        # 構建請求的資料，包含校友資料
+        data = {
+            "alumni_id": username,
+            "first_name": first_name,
+            "last_name": last_name,
+            "sex": sex,
+            "address": address,
+            "graduation_year": graduation_year,
+            "user_id": user_id,
+            "phone": phone
+        }
+
+        # 發送 POST 請求
+        response = requests.post(url, json=data)
+
+        # 根據伺服器回應的狀態碼處理結果
+        if response.status_code == 201:
+            print(f"校友 {first_name} {last_name} 新增成功。")
+            return True
+        elif response.status_code == 400:
+            print(f"錯誤：{response.json()['message']}")
+            return False
+        elif response.status_code == 500:
+            print(f"伺服器錯誤：{response.json()['message']}")
+            return False
+        else:
+            print(f"發生了未知錯誤，狀態碼：{response.status_code}")
+            return False
+
+    except requests.RequestException as e:
+        print(f"請求過程中發生錯誤：{e}")
+        return False
+
+def update_user(user_id: str, admin_name: str, password: str, role: str) -> bool:
+    """
+    向伺服器發送請求更新用戶資料（僅限 Admin）。
+
+    參數:
+        user_id (int): 需要更新的用戶 ID。
+        admin_name (str): 新的用戶名稱。
+        password (str): 新的密碼。
+        role (str): 新的角色。
+
+    回傳:
+        bool: 如果更新成功，返回 True；如果更新失敗，返回 False。
+    """
+    try:
+        url = f"{BASE_URL}/update_user/{user_id}"
+
+        # 構建請求的資料，包含新的用戶資料
+        data = {
+            "admin_name": admin_name,
+            "password": password,
+            "role": role
+        }
+
+        # 發送 PUT 請求
+        response = requests.put(url, json=data)
+
+        # 根據伺服器回應的狀態碼處理結果
+        if response.status_code == 200:
+            print(f"用戶 ID {user_id} 資料更新成功。")
+            return True
+        elif response.status_code == 400:
+            print(f"錯誤：{response.json()['message']}")
+            return False
+        elif response.status_code == 403:
+            print(f"權限錯誤：{response.json()['message']}")
+            return False
+        elif response.status_code == 500:
+            print(f"伺服器錯誤：{response.json()['message']}")
+            return False
+        else:
+            print(f"發生了未知錯誤，狀態碼：{response.status_code}")
+            return False
+
+    except requests.RequestException as e:
+        print(f"請求過程中發生錯誤：{e}")
+        return False
+
+def delete_user(user_id: int, username: str) -> bool:
+    """
+    向伺服器發送請求刪除用戶。
+
+    參數:
+        user_id (int): 要刪除的用戶 ID。
+        username (str): 發送請求的用戶名。
+
+    回傳:
+        bool: 如果刪除成功，返回 True；如果刪除失敗，返回 False。
+    """
+    try:
+        url = f"{BASE_URL}/delete_user/{user_id}"
+
+        # 構建請求的資料，包含 username
+        data = {
+            "username": username
+        }
+
+        # 發送 DELETE 請求
+        response = requests.delete(url, json=data)
+
+        # 根據伺服器回應的狀態碼處理結果
+        if response.status_code == 200:
+            print("用戶刪除成功。")
+            return True
+        elif response.status_code == 400:
+            print(f"錯誤：{response.json()['message']}")
+            return False
+        elif response.status_code == 403:
+            print(f"錯誤：{response.json()['message']}")
+            return False
+        elif response.status_code == 500:
+            print(f"伺服器錯誤：{response.json()['message']}")
+            return False
+        else:
+            print(f"發生了未知錯誤，狀態碼：{response.status_code}")
+            return False
+
+    except requests.RequestException as e:
+        print(f"請求過程中發生錯誤：{e}")
+        return False
+
+def update_user(user_id: int, username: str, password: str, role: str) -> bool:
+    """
+    向伺服器發送請求更新用戶資料（僅限 Admin）。
+
+    參數:
+        user_id (int): 需要更新的用戶 ID。
+        username (str): 新的用戶名稱。
+        password (str): 新的密碼。
+        role (str): 新的角色。
+
+    回傳:
+        bool: 如果更新成功，返回 True；如果更新失敗，返回 False。
+    """
+    try:
+        url = f"{BASE_URL}/update_user/{user_id}"
+
+        # 構建請求的資料，包含新的用戶資料
+        data = {
+            "username": username,
+            "password": password,
+            "role": role
+        }
+
+        # 發送 PUT 請求
+        response = requests.put(url, json=data)
+
+        # 根據伺服器回應的狀態碼處理結果
+        if response.status_code == 200:
+            print(f"用戶 ID {user_id} 資料更新成功。")
+            return True
+        elif response.status_code == 400:
+            print(f"錯誤：{response.json()['message']}")
+            return False
+        elif response.status_code == 403:
+            print(f"權限錯誤：{response.json()['message']}")
+            return False
+        elif response.status_code == 500:
+            print(f"伺服器錯誤：{response.json()['message']}")
+            return False
+        else:
+            print(f"發生了未知錯誤，狀態碼：{response.status_code}")
+            return False
+
+    except requests.RequestException as e:
+        print(f"請求過程中發生錯誤：{e}")
+        return False
 
 def admin_operations():
-    global ROLE, USER_ID, USER_NAME, ALUMNI_ID
-    """Admin-specific operations."""
-    print("\nAdmin operations can be implemented here.")
+    while True:
+
+        # ********** Admin Interface **********
+
+        print("\n=== Select the section number you want to enter ===")
+        print("1: Donation Information\n")
+        print("2: Alumni Account\n")
+        print("3: Alumni Association\n")
+        print("4. Achievement\n")
+        print("============================================")
+        sub_choice = input("Enter your choice: ")
+
+        # ********** Working Content **********
+
+        # 1: Donation Information
+
+        if sub_choice == "1":
+
+            print("\n=== Donation ===")
+            print("1. Insert")
+            print("2. Edit")
+            print("3. Delete")
+            print("4. View")
+            print("==================")
+            donation_choice = input("Enter your choice: ")
+
+            # === Donation Content ===
+            
+            # View
+            if donation_choice == "1":
+
+                donar = input("Enter the donor's name: ")
+                amount = int(input("Enter the donation amount: "))
+                date = input("Enter the donation date (YYYY-MM-DD): ")
+
+                insert_donation(donar, amount, date)
+
+            elif donation_choice == "2":
+
+                donation_id = int(input("Enter the donation ID to update: "))
+                amount = int(input("Enter the new donation amount: "))
+                date = input("Enter the new donation date (YYYY-MM-DD): ")
+
+                update_donation(donation_id, amount, date)
+
+            elif donation_choice == "3":
+                donation_id = int(input("Enter the donation ID to delete: "))
+                if delete_donation(donation_id):
+                    print(f"Donation {donation_id} deleted successfully.")
+                else:
+                    print(f"Failed to delete donation {donation_id}.")
+            elif donation_choice == "4":
+                alu_id = input("Enter the alumni ID to look up: ")            
+                donations = get_donation(alu_id)
+                for donation in donations.items():
+                    print(donation)
+        elif sub_choice == "2":
+            print("\n=== Alumni Account ===")
+            print("1. Register")
+            print("2. Update")
+            print("3. Delete")
+            print("==================")
+            alumni_choice = input("Enter your choice: ")
+
+            # === Alumni Account Content ===
+            
+            # Register
+            if alumni_choice == "1":
+                # 用戶輸入區域
+                username = input("輸入要創建的用戶名：")
+                password = input("輸入密碼：")
+                current_user = input("輸入當前用戶名（必須是 Admin）：")
+
+                # 呼叫 create_user 函式
+                user_id = create_user(username, password, "Alumni", current_user)
+                print(user_id)
+                if user_id:
+                    # 用戶輸入區域
+                    first_name = input("輸入校友的名字：")
+                    last_name = input("輸入校友的姓氏：")
+                    sex = input("輸入校友的性別（M/F）：")
+                    address = input("輸入校友的地址：")
+                    graduation_year = int(input("輸入校友的畢業年份："))
+                    phone = input("輸入校友的電話號碼：")
+
+                    # 呼叫 add_alumni 函式
+                    add_alumni(username, first_name, last_name, sex, address, graduation_year, user_id, phone)
+            elif alumni_choice == '2':
+                # 用戶輸入區域
+                user_id = input("輸入要更新的用戶 ID：")
+                password = input("輸入新的密碼：(無須變更請 Enter )")
+                role = input("輸入新的身分：(無須變更請 Enter )")
+                admin_name = input("輸入當前用戶名（必須是 Admin）：")
+
+                if password == "":
+                    password = None
+                if role == "":
+                    role = None
+
+                # 呼叫 update_user 函式
+                update_user(user_id, admin_name, password, role)
+            elif alumni_choice == "3":
+                # 用戶輸入區域
+                user_id = input("輸入要刪除的user_name：(通常為您的學號)")
+                username = input("輸入你的用戶名：(必須為Admin)")
+
+                # 呼叫 delete_user 函式
+                delete_user(user_id, username)
+        elif sub_choice == "3":
+            print("\n=== Alumni Association ===")
+            print("1: add")
+            print("2: Edit")
+            print("3: Delete")
+            print("==================")
+            association_choice = input("Enter your choice: ")
+
+            if association_choice == "1":
+                pass
+            elif association_choice == "2":
+                pass
+            elif association_choice == "3":
+                pass
+        elif sub_choice == "4":
+            print("\n=== Achievement ===")
+            print("1. Insert")
+            print("2. Edit")
+            print("3. Delete")
+            print("==================")
+            achievement_choice = input("Enter your choice: ")
+
+            # === Achievement Content ===
+            
+            # Insert
+            if achievement_choice == "1":
+
+                alumni_id = input("Enter the alumni ID: ")
+                title = input("Enter the achievement title: ")
+                description = input("Enter the achievement description: ")
+                date = input("Enter the achievement date (YYYY-MM-DD): ")
+                category = input("Enter the achievement category (e.g., Academic, Sports, etc.): ")
+
+                add_achievement(alumni_id, title, description, date, category)
+            elif achievement_choice == "2":
+                # 必須輸入的欄位
+                alumnileader_id = input("Enter the alumnileader ID: ")
+                title = input("Enter the achievement title: ")
+                date = input("Enter the achievement date (YYYY-MM-DD): ")
+
+                # 可選輸入的欄位，若無輸入則設為 None
+                new_description = input("Enter the new description (or press Enter to skip): ")
+                new_category = input("Enter the new category (or press Enter to skip): ")
+                if new_description == "":
+                    new_description = None
+                if new_category == "":
+                    new_category = None
+                update_achievement(alumnileader_id, title, date, 
+                                   new_description, new_category)            
+            elif achievement_choice == "3":
+                # User input section
+                alumnileader_id = input("Enter the alumnileader_id associated with the achievement: ")
+                title = input("Enter the title of the achievement to delete: ")
+                date = input("Enter the date of the achievement to delete: ")
+
+                # Call the delete function
+                delete_achievement(title, date, alumnileader_id)
+                
 
 
 def analyst_operations():
     global ROLE, USER_ID, USER_NAME, ALUMNI_ID
-    """Analyst-specific operations."""
-    print("\nAnalyst operations can be implemented here.")
+    
 
 
 def main():

@@ -62,11 +62,12 @@ def add_alumni(data):
     try:
         # SQL query to insert a new alumni record
         sql_query = """
-            INSERT INTO alumni (first_name, last_name, sex, address, graduation_year, user_id, phone)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO alumni (alumni_id, first_name, last_name, sex, address, graduation_year, user_id, phone)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
         # Extract the required fields from the data dictionary
         params = (
+            data.get('alumni_id'),
             data.get('first_name'),
             data.get('last_name'),
             data.get('sex'),
@@ -420,7 +421,16 @@ def create_user(username, password, role):
         # Execute the query with the provided parameters
         rows_affected = execute_update(sql_query, (username, password, role))
         
-        return "User created successfully." if rows_affected else "Failed to create user."
+        sql_query_4_user_id = """
+            select user_id from user_ where user_name = %s and password = %s and role = %s
+        """
+        import time
+        time.sleep(0.1)
+
+        column_names, rows = query(sql_query_4_user_id, (username, password, role))
+        user_id = rows[0][0]
+        
+        return str(user_id) if user_id else "Error: Failed to create user."
     except Exception as e:
         logging.error("Error creating user", exc_info=True)
         return f"Error: {str(e)}"
@@ -437,7 +447,7 @@ def delete_user(user_id):
     """
     try:
         # SQL query to delete a user
-        sql_query = "DELETE FROM user_ WHERE user_id = %s"
+        sql_query = "DELETE FROM user_ WHERE user_name = %s"
 
         # Execute the query with the user ID as a parameter
         rows_affected = execute_update(sql_query, (user_id,))
@@ -448,7 +458,7 @@ def delete_user(user_id):
         return f"Error: {str(e)}"
 
 
-def update_user(user_id, data):
+def update_user(username, data):
     """
     Updates a user's details.
 
@@ -460,9 +470,10 @@ def update_user(user_id, data):
         str: Success or error message.
     """
     try:
-        updates = ", ".join(f"{key} = %s" for key in data.keys())
-        sql_query = f"UPDATE users SET {updates} WHERE id = %s"
-        query(sql_query, (*data.values(), user_id))
+        updates = ", ".join(f"{key} = %s" for key in data.keys() if key != "admin_name" and data[key] is not None)
+        filtered_data = {key: value for key, value in data.items() if key != "admin_name" and value is not None}
+        sql_query = f"UPDATE user_ SET {updates} WHERE user_name = %s"
+        query(sql_query, (*filtered_data.values(), username))
         return "User updated successfully."
     except Exception as e:
         return f"Error: {str(e)}"
@@ -620,8 +631,8 @@ def get_salary_trends(department, year_range):
         start_year, end_year = year_range
         sql_query = """
             SELECT ch.start_date, ch.monthly_salary, d.department
-            FROM career_history ch
-            JOIN degree_ d ON ch.alumni_id = d.alumni_id
+            FROM career_history as ch
+            JOIN degree_ as d ON ch.alumni_id = d.alumni_id
             WHERE d.department = %s AND EXTRACT(YEAR FROM ch.start_date) BETWEEN %s AND %s
         """
         columns, results = query(sql_query, (department, start_year, end_year))
