@@ -60,9 +60,6 @@ def login():
 
     user = login_user(username, password)
     if user:
-        if username in logged_in_users:
-            return jsonify({"status": "error", "message": f"用戶 {username} 已經登入"}), 400
-        
         logged_in_users[username] = {
             "user_id": user["user_id"],
             "role": user["role"]
