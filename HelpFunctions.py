@@ -1236,67 +1236,6 @@ def list_association_members(association_id):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-# Event Management Functions
-def create_event(association_id, event_data):
-    """
-    Creates an event for an association.
-
-    Args:
-        association_id (int): Association ID.
-        event_data (dict): Event details.
-
-    Returns:
-        str: Success or error message.
-    """
-    try:
-        sql_query = """
-            INSERT INTO association_event (association_id, title, description, event_date)
-            VALUES (%s, %s, %s, %s)
-        """
-        query(sql_query, (
-            association_id, event_data['title'], event_data['description'], event_data['event_date']
-        ))
-        return "Event created successfully."
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-def update_event(data):
-    """
-    Updates an event record.
-
-    Args:
-        data (dict): Event details to update.
-
-    Returns:
-        str: Success or error message.
-    """
-    try:
-        updates = ", ".join(f"{key} = %s" for key in data.keys() if key not in ['title', 'event_date'])
-        sql_query = f"UPDATE association_event SET {updates} WHERE title = %s AND event_date = %s"
-        data['event_date'] = data.pop('event_date')
-        data['title'] = data.pop('title')
-        query(sql_query, (*data.values(), data['title'], data['event_date']))
-        return "Event updated successfully."
-    except Exception as e:
-        return f"Error: {str(e)}"
-
-def delete_event(data):
-    """
-    Deletes an event.
-
-    Args:
-        event_name (int): Event name,
-        date (str): Event date in YYYY-MM-DD format.
-    
-    Returns:
-        str: Success or error message.
-    """
-    try:
-        sql_query = "DELETE FROM association_event WHERE event_name = %s AND date = %s"
-        query(sql_query, (data['event_name'],data['date']))
-        return "Event deleted successfully."
-    except Exception as e:
-        return f"Error: {str(e)}"
 
 def list_events_by_association(association_id):
     """

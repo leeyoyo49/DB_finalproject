@@ -611,8 +611,14 @@ def alumni_operations():
 
         elif choice == "5":
             print("\n=== Alumni Association ===")
-            print("Alumni Association functionality is under construction.")
-
+            print("1. View your affiliated association")
+            print("2. View your association events")
+            print("3. View all alumni associations")
+            print("4. View all upcoming events")
+            print("5. Join an alumni association event")
+            print("6. Join an alumni association")
+            print("7. I am a cadre of the alumni association")
+            
             sub_choice = input("Enter your choice: ")
 
             if sub_choice == "1":
@@ -796,7 +802,7 @@ def alumni_operations():
                                 # print("This functionality is under construction.")
                             elif sub_choice == "5":
                                 print("\n=== Delete an Event ===")
-                                print("This functionality is under construction.")
+                                #print("This functionality is under construction.")
                             elif sub_choice == "6":
                                 print("\n=== Add a Participant to an Event ===")
                                 print("This functionality is under construction.")
