@@ -664,11 +664,11 @@ def record_donation(alumni_id, donation_data):
     """
     try:
         sql_query = """
-            INSERT INTO donation (alumni_id, amount, date, campaign_id)
+            INSERT INTO donation (alumni_id, amount, date, donation_type)
             VALUES (%s, %s, %s, %s)
         """
         query(sql_query, (
-            alumni_id, donation_data['amount'], donation_data['date'], donation_data.get('campaign_id')
+            alumni_id, donation_data['amount'], donation_data['date'], donation_data['donation_type']
         ))
         return "Donation recorded successfully."
     except Exception as e:
@@ -715,18 +715,18 @@ def get_donation(donation_id):
     Retrieves a donation record.
 
     Args:
-        donation_id (int): Donation ID.
+        donation_id (string): Donation ID.
 
     Returns:
         dict: Donation details or error message.
     """
     try:
-        sql_query = "SELECT * FROM donation WHERE donation_id = %s"
+        sql_query = "SELECT * FROM donation WHERE alumni_id = %s"
         columns, results = query(sql_query, (donation_id,))
         if not results:
             return {"status": "error", "message": "Donation not found"}
 
-        donation_details = dict(zip(columns, results[0]))
+        donation_details = dict(zip(columns, results))
         return {"status": "success", "donation_details": donation_details}
     except Exception as e:
         return {"status": "error", "message": str(e)}
@@ -815,7 +815,7 @@ def add_achievement(alumni_id, achievement_data):
     """
     try:
         sql_query = """
-            INSERT INTO achievement (alumni_id, title, description, date, category)
+            INSERT INTO achievement (alumnileader_id, title, description, date, category)
             VALUES (%s, %s, %s, %s, %s)
         """
         query(sql_query, (

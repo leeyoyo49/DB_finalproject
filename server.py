@@ -726,7 +726,7 @@ def get_career_paths_endpoint(alumni_id):
 
 # Donation Management Endpoints
 
-@app.route('/record_donation/<int:alumni_id>', methods=['POST'])
+@app.route('/record_donation/<string:alumni_id>', methods=['POST'])
 def record_donation_endpoint(alumni_id):
     """
     Records a donation for an alumni.
@@ -739,7 +739,7 @@ def record_donation_endpoint(alumni_id):
         }
 
     Args:
-        alumni_id (int): ID of the alumni making the donation.
+        alumni_id (string): ID of the alumni making the donation.
 
     Returns:
         JSON with status and message.
@@ -795,7 +795,7 @@ def delete_donation_endpoint(donation_id):
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 200
 
-@app.route('/get_donation/<int:donation_id>', methods=['GET'])
+@app.route('/get_donation/<string:donation_id>', methods=['GET'])
 def get_donation_endpoint(donation_id):
     """
     Retrieves a donation record.
@@ -874,7 +874,7 @@ def get_donation_trends_endpoint():
 
 # Achievement Management Endpoints
 
-@app.route('/add_achievement/<int:alumni_id>', methods=['POST'])
+@app.route('/add_achievement/<string:alumni_id>', methods=['POST'])
 def add_achievement_endpoint(alumni_id):
     """
     Adds an achievement for an alumni.
@@ -902,7 +902,7 @@ def add_achievement_endpoint(alumni_id):
         return jsonify({"status": "error", "message": message}), 500
     return jsonify({"status": "success", "message": message}), 201
 
-@app.route('/update_achievement/<int:achievement_id>', methods=['PUT'])
+@app.route('/update_achievement/<string:achievement_id>', methods=['PUT'])
 def update_achievement_endpoint(achievement_id):
     """
     Updates an achievement record.

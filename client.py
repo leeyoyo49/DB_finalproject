@@ -92,40 +92,6 @@ def get_alumni(alumni_id):
         # Handle any request exceptions (e.g., network issues)
         print("Error while fetching alumni details:", e)
         return {"status": "error", "message": str(e)}
-
-def get_career(alumni_id):
-    """
-    Fetches alumni career path from the server.
-
-    Args:
-        alumni_id (string): ID of the alumni to retrieve.
-
-    Returns:
-        dict: The response JSON containing alumni career details or error message.
-    """
-    try:
-        # Construct the request URL
-        url = f"{BASE_URL}/get_career_paths/{alumni_id}"
-        
-        
-        # Send a GET request to the server
-        response = requests.get(url)
-        
-        # Check the status code and handle response
-        if response.status_code == 200:
-            print("Alumni career path retrieved successfully:")
-            return response.json()
-        elif response.status_code == 404:
-            print("Alumni not found.")
-            return response.json()
-        else:
-            print(f"Unexpected error occurred. Status code: {response.status_code}")
-            return {"status": "error", "message": "Unexpected error occurred."}
-    except requests.RequestException as e:
-        # Handle any request exceptions (e.g., network issues)
-        print("Error while fetching alumni career path:", e)
-        return {"status": "error", "message": str(e)}
-
     
 def edit_profile(alumni_id):
     """
@@ -163,103 +129,7 @@ def edit_profile(alumni_id):
             print(f"Failed to update profile: {response.json()['message']}")
     except requests.exceptions.RequestException as e:
         print(f"Error during request: {e}")
-        
-import requests
 
-def get_degree(alumni_id):
-    """
-    Fetches alumni degree information from the server.
-
-    Args:
-        alumni_id (string): ID of the alumni to retrieve.
-
-    Returns:
-        dict: The response JSON containing alumni degree details or error message.
-    """
-    try:
-        # Construct the request URL
-        url = f"{BASE_URL}/get_degree/{alumni_id}"
-        
-        # Send a GET request to the server
-        response = requests.get(url)
-        
-        # Check the status code and handle response
-        if response.status_code == 200:
-            print("Alumni degree details retrieved successfully:")
-            return response.json()
-        elif response.status_code == 404:
-            print("Alumni not found.")
-            return response.json()
-        else:
-            print(f"Unexpected error occurred. Status code: {response.status_code}")
-            return {"status": "error", "message": "Unexpected error occurred."}
-    except requests.RequestException as e:
-        # Handle any request exceptions (e.g., network issues)
-        print("Error while fetching alumni degree details:", e)
-        return {"status": "error", "message": str(e)}
-
-def add_job(alumni_id):
-    """
-    Interacts with the server to add a career history record for the given alumni.
-
-    Args:
-        alumni_id (str): Alumni ID.
-    """
-    job_title = input("Enter job title: ")
-    company = input("Enter company name: ")
-    start_date = input("Enter start date (YYYY-MM-DD): ")
-    end_date = input("Enter end date (Optional, YYYY-MM-DD) or press Enter to skip: ")
-    monthly_salary = input("Enter monthly salary (Optional, numeric): ")
-    job_description = input("Enter job description (Optional): ")
-
-    # Prepare the data
-    career_data = {
-        "job_title": job_title,
-        "company": company,
-        "start_date": start_date,
-        "end_date": end_date if end_date else None,
-        "monthly_salary": int(monthly_salary) if monthly_salary else None,
-        "job_description": job_description
-    }
-
-    try:
-        response = requests.post(f"{BASE_URL}/add_career_history/{alumni_id}", json=career_data)
-        if response.status_code == 200:
-            print("Career history added successfully.")
-        else:
-            print(f"Failed to add career history: {response.json()['message']}")
-    except requests.exceptions.RequestException as e:
-        print(f"Error during request: {e}")
-        
-def get_personal_association(alumni_id):
-    """
-    Fetches all events an alumni has participated in from the server.
-
-    Args:
-        alumni_id (int): Alumni ID.
-        base_url (str): Base URL of the Flask application (default: localhost).
-
-    Returns:
-        dict: JSON response containing event details or an error message.
-    """
-    try:
-        # Construct the full URL for the API endpoint
-        url = f"{BASE_URL}/get_participation_by_alumni/{alumni_id}"
-        
-        # Send a GET request to the API
-        response = requests.get(url)
-        
-        # Check for HTTP errors
-        response.raise_for_status()
-        
-        # Parse and return JSON data
-        return response.json()
-    except requests.exceptions.HTTPError as http_err:
-        return {"status": "error", "message": f"HTTP error occurred: {http_err}"}
-    except Exception as err:
-        return {"status": "error", "message": f"An error occurred: {err}"}
-    
-    
 def alumni_operations():
     global ROLE, USER_ID, USER_NAME, ALUMNI_ID
     """Alumni-specific operations."""
@@ -305,18 +175,7 @@ def alumni_operations():
                             if key_print == "Alumni id":
                                 key_print = "Alumni ID (User Name)"
                             print(f"{key_print}: {value}")
-                degree_details = get_degree(ALUMNI_ID)
-                if degree_details["status"] == "error":
-                    print(f"Error: {degree_details['message']}")
-                # Print the response in a formatted way
-                alumni_info = degree_details['degree']
-                print("=== Degree Information ===")
-                for key, value in alumni_info.items():
-                    key_print = key.replace('_', ' ').capitalize()
-                    if key_print == "Alumni id" or key_print == "Degree id":
-                        continue
-                        key_print = "Alumni ID (User Name)"
-                    print(f"{key_print}: {value}")
+            
             elif sub_choice == "2":
                 print("\n=== Edit Profile ===")
                 edit_profile(ALUMNI_ID)
@@ -329,28 +188,12 @@ def alumni_operations():
 
             if sub_choice == "1":
                 print("\n=== View Career ===")
-                career_details = get_career(ALUMNI_ID)
-                if career_details["status"] == "error":
-                    print(f"Error: {career_details['message']}")
-                # Print the response in a formatted way
-                alumni_info = career_details['career_paths']
-                for i in range(len(alumni_info)):
-                    print(f"=== Job {i+1} ===")
-                    for key, value in alumni_info[i].items():
-                        key_print = key.replace('_', ' ').capitalize()
-                        if key_print == "Alumni id":
-                            continue
-                            key_print = "Alumni ID (User Name)"
-                        if key_print == "End date":
-                            print_later = f"{key_print}: {value if value else 'Present'}"
-                            continue
-                        print(f"{key_print}: {value}")
-                    print(print_later)
-      
+                # 這裡可以實現查看事業資料功能
+                print("View Career functionality is under construction.")
+            
             elif sub_choice == "2":
                 print("\n=== Edit Career ===")
                 # 這裡可以實現編輯事業資料功能
-                add_job(ALUMNI_ID)
                 print("Edit Career functionality is under construction.")
 
         elif choice == "3":
@@ -358,53 +201,12 @@ def alumni_operations():
             print("Achievements functionality is under construction.")
 
         elif choice == "4":
-            print("\n=== Your Donation History ===")
+            print("\n=== Donation ===")
+            print("Donation functionality is under construction.")
 
         elif choice == "5":
             print("\n=== Alumni Association ===")
-            print("1. View your affiliated association")
-            print("2. View your association events")
-            print("3. View all alumni associations")
-            print("4. View all upcoming events")
-            print("5. Join an alumni association event")
-            print("6. Join an alumni association")
-            print("7. I am a cadre of the alumni association")
             print("Alumni Association functionality is under construction.")
-            
-            sub_choice = input("Enter your choice: ")
-            
-            if sub_choice == '1':
-                print("\n=== Your Affiliated Association ===")
-                response = get_personal_association(ALUMNI_ID)
-                if response["status"] == "error":
-                    print(f"Error: {response['message']}")
-                else:
-                    print(response)
-                #print("Affiliated Association functionality is under construction.")
-            elif sub_choice == '2':
-                print("\n=== Your Association Events ===")
-                print("Association Events functionality is under construction.")
-            elif sub_choice == '3':
-                print("\n=== All Alumni Associations ===")
-                print("All Alumni Associations functionality is under construction.")
-            elif sub_choice == '4':
-                print("\n=== All Upcoming Events ===")
-                print("All Upcoming Events functionality is under construction.")
-            elif sub_choice == '5':
-                print("\n=== Join an Alumni Association Event ===")
-                print("Please contact the association that holds the event for details.")
-            elif sub_choice == '5':
-                print("\n=== Join an Alumni Association ===")
-                print("Please contact the association for more information.")
-            elif sub_choice == '6':
-                print("\n=== I am a Cadre of the Alumni Association ===")
-                print("1. Add a new member")
-                print("2. Delete a member")
-                print("3. Add an event")
-                print("4. Delete an event")
-                print("5. Add a participant to an event")
-                print("6. Delete a participant from an event")
-                print("7. Transfer the position of cadre")
 
         elif choice == "6":
             print("Exiting alumni operations.")
@@ -412,11 +214,357 @@ def alumni_operations():
 
         else:
             print("Invalid choice, please try again.")
+
+def insert_donation(alumni_id: str, amount: int, date: str, campaign_id = "Regular") -> bool:
+    """
+    insert the donation records to the server.
+
+    Args:
+        alumni_id (string): ID of the alumni.
+
+    Returns:
+        JSON with status and message.
+    """
+    data = {
+        "amount": amount,
+        "date": date,
+        "donation_type": campaign_id    
+    }
+    try:
+        url = f"{BASE_URL}/record_donation/{alumni_id}"
+        response = requests.post(url, json=data)
+        if response.status_code == 201:
+            print("Success")
+            return True
+        elif response.status_code == 500:
+            print("Error")
+            return False
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return False
+    except requests.RequestException as e:
+        print("Error while fetching alumni details:", e)
+        return False
+        
+def update_donation(donation_id: int, amount: int, date: str) -> bool:
+    """
+    Update a donation record on the server.
+
+    Args:
+        donation_id (int): ID of the donation to update.
+        amount (int): The new donation amount.
+        date (str): The new donation date in 'YYYY-MM-DD' format.
+
+    Returns:
+        bool: True if the update was successful, False otherwise.
+    """
+    data = {
+        "amount": amount,
+        "date": date
+    }
+    try:
+        url = f"{BASE_URL}/update_donation/{donation_id}"
+        response = requests.put(url, json=data)
+        
+        if response.status_code == 200:
+            print("Update successful.")
+            return True
+        elif response.status_code == 400:
+            print("Error: Invalid or missing data.")
+            return False
+        elif response.status_code == 500:
+            print("Server error occurred while updating the donation.")
+            return False
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return False
+
+    except requests.RequestException as e:
+        print("Error while updating donation details:", e)
+        return False
+
+def delete_donation(donation_id: int) -> bool:
+    """
+    Deletes a donation record on the server.
+
+    Args:
+        donation_id (int): ID of the donation to delete.
+
+    Returns:
+        bool: True if the deletion was successful, False otherwise.
+    """
+    try:
+        url = f"{BASE_URL}/delete_donation/{donation_id}"
+        response = requests.delete(url)
+        
+        if response.status_code == 200:
+            print("Donation deleted successfully.")
+            return True
+        elif response.status_code == 404:
+            print("Error: Donation not found.")
+            return False
+        elif response.status_code == 500:
+            print("Server error occurred while deleting the donation.")
+            return False
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return False
+
+    except requests.RequestException as e:
+        print("Error while deleting donation:", e)
+        return False
+
+def get_donation(donation_id: str) -> dict:
+    """
+    Retrieves a donation record from the server.
+
+    Args:
+        donation_id (int): ID of the donation to retrieve.
+
+    Returns:
+        dict: A dictionary containing donation details or error message.
+    """
+    try:
+        url = f"{BASE_URL}/get_donation/{donation_id}"
+        response = requests.get(url)
+        
+        if response.status_code == 200:
+            # 如果請求成功，返回捐款資料
+            return response.json()
+        elif response.status_code == 404:
+            # 找不到捐款紀錄時
+            print("Donation not found.")
+            return {"status": "error", "message": "Donation not found"}
+        else:
+            # 處理其他錯誤
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return {"status": "error", "message": f"Unexpected error occurred. Status code: {response.status_code}"}
     
+    except requests.RequestException as e:
+        print(f"Error while fetching donation details: {e}")
+        return {"status": "error", "message": str(e)}
+
+def add_achievement(alumni_id: str, title: str, description: str, date: str, category: str) -> bool:
+    """
+    Adds an achievement for the specified alumni.
+
+    Args:
+        alumni_id (int): ID of the alumni receiving the achievement.
+        title (str): The title of the achievement.
+        description (str): A description of the achievement.
+        date (str): The date of the achievement in 'YYYY-MM-DD' format.
+        category (str): The category of the achievement (e.g., 'Academic').
+
+    Returns:
+        bool: True if the achievement was added successfully, False otherwise.
+    """
+    data = {
+        "title": title,
+        "description": description,
+        "date": date,
+        "category": category
+    }
+    
+    try:
+        url = f"{BASE_URL}/add_achievement/{alumni_id}"
+        response = requests.post(url, json=data)
+        
+        if response.status_code == 201:
+            print("Achievement added successfully.")
+            return True
+        elif response.status_code == 400:
+            print("Error: Missing required fields.")
+            return False
+        elif response.status_code == 500:
+            print("Server error occurred while adding the achievement.")
+            return False
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return False
+
+    except requests.RequestException as e:
+        print(f"Error while adding achievement: {e}")
+        return False
+
+def update_achievement(achievement_id: str, title: str = None, date: str = None) -> bool:
+    """
+    Update an achievement record on the server.
+
+    Args:
+        achievement_id (int): ID of the achievement to update.
+        title (str, optional): The new title of the achievement.
+        date (str, optional): The new date of the achievement in 'YYYY-MM-DD' format.
+
+    Returns:
+        bool: True if the update was successful, False otherwise.
+    """
+    # Prepare the data to be updated, only include fields that are provided
+    data = {}
+    if title:
+        data["title"] = title
+    if date:
+        data["date"] = date
+
+    if not data:  # No data provided for update
+        print("Error: No data to update.")
+        return False
+
+    try:
+        url = f"{BASE_URL}/update_achievement/{achievement_id}"
+        response = requests.put(url, json=data)
+        
+        if response.status_code == 200:
+            print("Update successful.")
+            return True
+        elif response.status_code == 400:
+            print("Error: Missing or invalid data.")
+            return False
+        elif response.status_code == 500:
+            print("Server error occurred while updating the achievement.")
+            return False
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return False
+
+    except requests.RequestException as e:
+        print("Error while updating achievement details:", e)
+        return False
+
+
+def delete_achievement(achievement_id: int) -> bool:
+    """
+    Delete an achievement record on the server.
+
+    Args:
+        achievement_id (int): ID of the achievement to delete.
+
+    Returns:
+        bool: True if the deletion was successful, False otherwise.
+    """
+    try:
+        url = f"{BASE_URL}/delete_achievement/{achievement_id}"
+        response = requests.delete(url)
+
+        if response.status_code == 200:
+            print("Deletion successful.")
+            return True
+        elif response.status_code == 404:
+            print("Error: Achievement not found.")
+            return False
+        elif response.status_code == 500:
+            print("Server error occurred while deleting the achievement.")
+            return False
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return False
+
+    except requests.RequestException as e:
+        print("Error while deleting achievement details:", e)
+        return False
+
 def admin_operations():
-    global ROLE, USER_ID, USER_NAME, ALUMNI_ID
-    """Admin-specific operations."""
-    print("\nAdmin operations can be implemented here.")
+    while True:
+
+        # ********** Admin Interface **********
+
+        print("\n=== Select the section number you want to enter ===")
+        print("1: Donation Information\n")
+        print("2: Alumni Account\n")
+        print("3: Alumni Association\n")
+        print("4. Achievement\n")
+        print("============================================")
+        sub_choice = input("Enter your choice: ")
+
+        # ********** Working Content **********
+
+        # 1: Donation Information
+
+        if sub_choice == "1":
+
+            print("\n=== Donation ===")
+            print("1. Insert")
+            print("2. Edit")
+            print("3. Delete")
+            print("4. View")
+            print("==================")
+            donation_choice = input("Enter your choice: ")
+
+            # === Donation Content ===
+            
+            # View
+            if donation_choice == "1":
+
+                donar = input("Enter the donor's name: ")
+                amount = int(input("Enter the donation amount: "))
+                date = input("Enter the donation date (YYYY-MM-DD): ")
+
+                insert_donation(donar, amount, date)
+
+            elif donation_choice == "2":
+
+                donation_id = int(input("Enter the donation ID to update: "))
+                amount = int(input("Enter the new donation amount: "))
+                date = input("Enter the new donation date (YYYY-MM-DD): ")
+
+                update_donation(donation_id, amount, date)
+
+            elif donation_choice == "3":
+                donation_id = int(input("Enter the donation ID to delete: "))
+                if delete_donation(donation_id):
+                    print(f"Donation {donation_id} deleted successfully.")
+                else:
+                    print(f"Failed to delete donation {donation_id}.")
+            elif donation_choice == "4":
+                alu_id = input("Enter the alumni ID to look up: ")            
+                donations = get_donation(alu_id)
+                for donation in donations.items():
+                    print(donation)
+        elif sub_choice == "2":
+            print("\n=== Alumni Account ===")
+            print("1. Register")
+            print("2. Update")
+            print("3. Delete")
+            print("==================")
+            alumni_choice = input("Enter your choice: ")
+
+            # === Alumni Account Content ===
+            
+            # Register
+            if alumni_choice == "1":
+                alumni_id = input("Enter the alumni ID: ")
+                name = input("Enter the alumni name: ")
+                email = input("Enter the alumni email: ")
+                password = input("Enter the alumni password: ")
+        elif sub_choice == "4":
+            print("\n=== Achievement ===")
+            print("1. Insert")
+            print("2. Edit")
+            print("3. Delete")
+            print("==================")
+            achievement_choice = input("Enter your choice: ")
+
+            # === Achievement Content ===
+            
+            # Insert
+            if achievement_choice == "1":
+
+                alumni_id = input("Enter the alumni ID: ")
+                title = input("Enter the achievement title: ")
+                description = input("Enter the achievement description: ")
+                date = input("Enter the achievement date (YYYY-MM-DD): ")
+                category = input("Enter the achievement category (e.g., Academic, Sports, etc.): ")
+
+                add_achievement(alumni_id, title, description, date, category)
+            elif achievement_choice == "2":
+                achievement_id = input("Enter the achievement ID: ")
+                title = input("Enter the achievement title: ")
+                date = input("Enter the achievement date (YYYY-MM-DD): ")
+                update_achievement(achievement_id, title, date)
+            elif achievement_choice == "3":
+                pass
+
+
+
     
 def analyst_operations():
     global ROLE, USER_ID, USER_NAME, ALUMNI_ID
