@@ -380,7 +380,12 @@ def get_alumni_achievements(alumni_id):
     """
     try:
         # SQL query to retrieve achievements for a specific alumni
-        sql_query = "SELECT * FROM achievement WHERE alumni_id = %s"
+        sql_query = """
+        SELECT * 
+        FROM achievement at
+        JOIN ACHIEVE a ON at.AlumniLeader_ID = a.AlumniLeader_ID
+        WHERE a.alumni_id = %s
+        """
 
         # Execute the query
         columns, results = query(sql_query, (alumni_id,))
@@ -1080,38 +1085,69 @@ def list_association_members(association_id):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-# Event Management Functions
+import psycopg2
+# transaction control
 def create_event(association_id, event_data):
     """
-    Creates an event for an association.
+    Creates an event for an association with transaction control.
 
     Args:
         association_id (int): Association ID.
-        event_name (int): Association ID.
-        date (str): Event date in YYYY-MM-DD format.
-        description (str): Event description.
-        location (str): Event location.
+        event_data (dict): Dictionary containing event details:
+            - event_name (str): Event name.
+            - date (str): Event date in YYYY-MM-DD format.
+            - description (str): Event description.
+            - location (str): Event location.
 
     Returns:
         str: Success or error message.
     """
+    conn = psycopg2.connect(
+        dbname="final proposal",
+        user="postgres",
+        password="",
+        host="localhost",
+        port="5432"
+    )
     try:
-        sql_query = """
+        # Begin a transaction
+        conn.autocommit = False  # Disable autocommit to control transactions
+        cur = conn.cursor()
+
+        # Insert into association_event
+        sql_query_event = """
             INSERT INTO association_event (event_name, date, description, location)
             VALUES (%s, %s, %s, %s)
         """
-        query(sql_query, (
+        cur.execute(sql_query_event, (
             event_data['event_name'], event_data['date'], event_data['description'], event_data['location']
         ))
 
-        sql_query = """
+        # Insert into held_by
+        sql_query_held_by = """
             INSERT INTO held_by (association_id, event_name, date)
             VALUES (%s, %s, %s)
         """
-        query(sql_query, (association_id, event_data['event_name'], event_data['date']))
+        cur.execute(sql_query_held_by, (
+            association_id, event_data['event_name'], event_data['date']
+        ))
+
+        # Commit the transaction
+        conn.commit()
         return "Event created successfully."
+
     except Exception as e:
+        # Rollback transaction in case of error
+        conn.rollback()
         return f"Error: {str(e)}"
+
+    finally:
+        # Ensure the connection is closed
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+
 
 def update_event(association_id, event_data):
     """
