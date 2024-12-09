@@ -919,10 +919,13 @@ def list_achievements(alumni_id):
     """
     try:
         sql_query = """
-        SELECT * 
-        FROM achievement 
-        JOIN alumni_leader ON achievement.alumnileader_id = alumni_leader.alumnileader_id
-        WHERE alumni_id = %s 
+        SELECT achievement.title, achievement.date, achieve.*
+        FROM achievement
+        JOIN achieve 
+            ON achievement.alumnileader_id = achieve.alumnileader_id
+            AND achievement.title = achieve.title
+            AND achievement.date = achieve.date
+        WHERE achieve.alumni_id = %s;
         """
         columns, results = query(sql_query, (alumni_id,))
         achievements = [dict(zip(columns, row)) for row in results]

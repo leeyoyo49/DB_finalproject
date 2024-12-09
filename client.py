@@ -648,6 +648,31 @@ def add_cadre_to_association(association_id):
 
     except requests.exceptions.RequestException as e:
         print(f"Request failed: {str(e)}")
+
+
+def list_achievements(alumni_id):
+    """
+    Client-side function to list all achievements for a given alumni.
+    """
+
+    url = f"{BASE_URL}/list_achievements/{alumni_id}"
+    
+    try:
+        response = requests.get(url)
+        
+        if response.status_code == 200:
+            print("Achievements retrieved successfully:")
+            return response.json()
+        elif response.status_code == 404:
+            print("Achievements not found.")
+            return response.json()
+        else:
+            print(f"Unexpected error occurred. Status code: {response.status_code}")
+            return {"status": "error", "message": "Unexpected error occurred."}
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {str(e)}")
+        return {"status": "error", "message": str(e)}
         
 def get_donation(alumni_id):
     """
@@ -777,7 +802,33 @@ def alumni_operations():
 
         elif choice == "3":
             print("\n=== Your Past Achievements ===")
-            
+            achievement_details = list_achievements(ALUMNI_ID)
+            if achievement_details["status"] == "error":
+                print(f"Error: {achievement_details['message']}")
+            else:
+                for i in range(len(achievement_details["achievements"])):
+                    achievement = achievement_details["achievements"][i]
+
+                    # Handle the 'title' key first
+                    if "title" in achievement:
+                        print(f"Title: {achievement['title']}")
+                    
+                    # Iterate over the rest of the keys
+                    for key, value in achievement.items():
+                        print(f"=== Achievement {i+1} ===")
+                        if key == 'title':
+                            continue  # Skip 'title' as it's already handled
+                        
+                        if key == 'alumnileader_id':
+                            key = 'Achievement leader ID'
+                        key_print = key.replace("_", " ").capitalize()
+
+                        if key_print == "Alumni id":
+                            continue
+                            key_print = "Alumni ID (User Name)"
+                        
+                        print(f"{key_print}: {value}")
+
             #print("Achievements functionality is under construction.")
 
         elif choice == "4":
@@ -1734,6 +1785,8 @@ def main():
                 continue
 
         elif choice == "3":  # Analyst login
+            print("Analyst login is under construction.")
+            '''
             role, user_id, user_name = login()
             if role == -1:  # Login failed
                 print("Invalid credentials. Please try again.")
@@ -1747,6 +1800,7 @@ def main():
             else:  # Incorrect role for this option
                 print("Invalid role. Please try again.")
                 continue
+            '''
 
         elif choice == "4":  # Exit the program
             print("Exiting the program. Goodbye!")

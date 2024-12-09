@@ -873,7 +873,7 @@ def get_achievement_endpoint(achievement_id):
         return jsonify(achievement_details), 404
     return jsonify(achievement_details), 200
 
-@app.route('/list_achievements/<int:alumni_id>', methods=['GET'])
+@app.route('/list_achievements/<string:alumni_id>', methods=['GET'])
 def list_achievements_endpoint(alumni_id):
     """
     Lists all achievements for an alumni.
