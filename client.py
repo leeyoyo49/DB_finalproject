@@ -66,7 +66,7 @@ def login():
             return -1, -1, -1
 
     except requests.exceptions.RequestException as e:
-        print(f"Request error: {e}")
+        # print(f"Request error: {e}")
         return -1, -1, -1
 
 

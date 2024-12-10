@@ -1054,14 +1054,16 @@ def get_association(association_id):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
+import threading
 from datetime import datetime
-
 import psycopg2
-from datetime import datetime
+
+# Create a global lock object
+lock = threading.Lock()
 
 def add_member_to_association(alumni_id, association_id):
     """
-    Adds a member to an association with a lock to handle concurrency.
+    Adds a member to an association using Python's threading lock to handle concurrency.
 
     Args:
         alumni_id (int): Alumni ID.
@@ -1071,37 +1073,33 @@ def add_member_to_association(alumni_id, association_id):
         str: Success or error message.
     """
     try:
-        # Get the current date in 'YYYY-MM-DD' format
-        today_date = datetime.today().strftime('%Y-%m-%d')
+        # Acquire the lock
+        with lock:
+            # Get the current date in 'YYYY-MM-DD' format
+            today_date = datetime.today().strftime('%Y-%m-%d')
 
-        # Connect to the database
-        conn = psycopg2.connect(
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            host=DB_HOST,
-            port=DB_PORT,  # Explicitly specify port
-        )
-        conn.autocommit = False  # Disable autocommit for transaction control
-        cur = conn.cursor()
+            # Connect to the database
+            conn = psycopg2.connect(
+                dbname=DB_NAME,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                host=DB_HOST,
+                port=DB_PORT,  # Explicitly specify port
+            )
+            conn.autocommit = False  # Disable autocommit for transaction control
+            cur = conn.cursor()
 
-        # Acquire an advisory lock using alumni_id and association_id
-        cur.execute("SELECT pg_advisory_lock(%s, %s);", (alumni_id, association_id))
+            # Execute the insert query
+            sql_query = """
+                INSERT INTO is_member (alumni_id, association_id, join_date)
+                VALUES (%s, %s, %s);
+            """
+            cur.execute(sql_query, (alumni_id, association_id, today_date))
 
-        # Execute the insert query
-        sql_query = """
-            INSERT INTO is_member (alumni_id, association_id, join_date)
-            VALUES (%s, %s, %s);
-        """
-        cur.execute(sql_query, (alumni_id, association_id, today_date))
+            # Commit the transaction
+            conn.commit()
 
-        # Commit the transaction
-        conn.commit()
-
-        # Release the advisory lock
-        cur.execute("SELECT pg_advisory_unlock(%s, %s);", (alumni_id, association_id))
-
-        return "Member added to association successfully."
+            return "Member added to association successfully."
 
     except Exception as e:
         if conn:
@@ -1110,10 +1108,11 @@ def add_member_to_association(alumni_id, association_id):
 
     finally:
         # Ensure the connection and cursor are properly closed
-        if cur:
+        if 'cur' in locals() and cur:
             cur.close()
-        if conn:
+        if 'conn' in locals() and conn:
             conn.close()
+
 
 
 def remove_member_from_association(alumni_id, association_id):
@@ -1158,6 +1157,7 @@ def list_association_members(association_id):
         return {"status": "error", "message": str(e)}
 
 import psycopg2
+
 # transaction control
 def create_event(association_id, event_data):
     """

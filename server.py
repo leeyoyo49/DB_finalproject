@@ -70,10 +70,10 @@ def login():
             "user_id": user["user_id"],
             "username": username,
             "role": user["role"],
-            "message": "登入成功"
+            "message": "login success"
         }), 200
 
-    return jsonify({"status": "error", "message": "用戶名或密碼錯誤"}), 401
+    return jsonify({"status": "error", "message": "invalid username or password"}), 401
 
 @app.route('/logout', methods=['POST'])
 def logout():
@@ -99,11 +99,11 @@ def logout():
     data = request.json
     username = data.get("username")
     if username not in logged_in_users:
-        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
+        return jsonify({"status": "error", "message": f"user {username} has not logged in yet"}), 400
     
     # Remove the user from logged_in_users
     del logged_in_users[username]
-    return jsonify({"status": "success", "message": "登出成功"}), 200
+    return jsonify({"status": "success", "message": "success"}), 200
 
 
 
@@ -126,7 +126,7 @@ def dashboard():
     data = request.json
     username = data.get("username")
     if username not in logged_in_users:
-        return jsonify({"status": "error", "message": f"用戶 {username} 尚未登入"}), 400
+        return jsonify({"status": "error", "message": f"user {username} hasn't logged in"}), 400
     
     user = logged_in_users[username]
     return jsonify({
