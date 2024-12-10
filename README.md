@@ -14,7 +14,7 @@ University Alumni Tracking System 是一個用於記錄與管理校友信息的�
 - [Installation](#installation)
 - [Setting](#Setting)
 - [Execute](#Execute)
-- [Appendix](#Appendix:各角色擁有的權限)
+- [Appendix](#Appendix:_各角色擁有的權限)
 ## Authors
 
 - 李訓佑 (B11705022)
