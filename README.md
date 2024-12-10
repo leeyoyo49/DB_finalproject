@@ -33,7 +33,7 @@ University Alumni Tracking System 是一個用於記錄與管理校友信息的�
 ## Setting
 - 使用備份檔 dbfinal 復原資料庫
 - 預設連線通道為 127.0.0.1:5001，可至 server.py 及 client.py 修改
-- 在 `db_connection.py` 內設定您的 database 密碼
+- 在 `db_connection.py`, `server.py` 內設定您的 database 密碼(兩個都要設定檔案最上面的全域變數)
 - `server.py` 和 database 之間的連接 port 預設為5433，可至`db_connection.py`調整
 
 ## Execute
