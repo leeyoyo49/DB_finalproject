@@ -5,6 +5,7 @@
 import requests
 import json
 import sys
+from datetime import datetime
 
 BASE_URL = "http://localhost:5001"
 
@@ -1603,34 +1604,81 @@ def admin_operations():
             if donation_choice == "1":
 
                 print("\n=== Insert Donation ===")
-                donar = input("Enter the Alumni ID: ")
-                amount = int(input("Enter the donation amount: "))
-                date = input("Enter the donation date (YYYY-MM-DD): ")
+                try:
+                    # 獲取 Alumni ID
+                    donar = input("Enter the Alumni ID: ").strip()
+                    if not donar:
+                        raise ValueError("Alumni ID cannot be empty.")
+
+                    # 獲取捐款金額，並確認輸入的是有效數字
+                    amount_input = input("Enter the donation amount: ").strip()
+                    if not amount_input.isdigit():
+                        raise ValueError("Donation amount must be a positive integer.")
+                    amount = int(amount_input)
+                    if amount <= 0:
+                        raise ValueError("Donation amount must be greater than zero.")
+
+                    # 獲取捐款日期，並確認日期格式為 YYYY-MM-DD
+                    date = input("Enter the donation date (YYYY-MM-DD): ").strip()
+
+                except ValueError as e:
+                    print(f"Input error: {e}")
+                except Exception as e:
+                    print(f"An unexpected error occurred: {e}")
 
                 insert_donation(donar, amount, date)
 
             elif donation_choice == "2":
 
                 print("\n=== Edit Donation ===")
-                donation_id = int(input("Enter the Donation ID to update: (It's the seq number of donation)"))
-                amount = int(input("Enter the new donation amount: "))
-                date = input("Enter the new donation date (YYYY-MM-DD): ")
+                try:
+                    # 獲取捐款 ID，並確認輸入的是有效的正整數
+                    donation_id_input = input("Enter the Donation ID to update (It's the seq number of donation): ").strip()
+                    if not donation_id_input.isdigit():
+                        raise ValueError("Donation ID must be a positive integer.")
+                    donation_id = int(donation_id_input)
+
+                    # 獲取新的捐款金額，並確認輸入的是有效的正整數
+                    amount_input = input("Enter the new donation amount: ").strip()
+                    if not amount_input.isdigit():
+                        raise ValueError("Donation amount must be a positive integer.")
+                    amount = int(amount_input)
+                    if amount <= 0:
+                        raise ValueError("Donation amount must be greater than zero.")
+
+                    # 獲取新的捐款日期，並確認日期格式為 YYYY-MM-DD
+                    date_input = input("Enter the new donation date (YYYY-MM-DD): ").strip()
+                    date = datetime.strptime(date_input, "%Y-%m-%d")  # 驗證日期格式
+
+                except ValueError as e:
+                    print(f"Input error: {e}")
+                except Exception as e:
+                    print(f"An unexpected error occurred: {e}")
 
                 update_donation(donation_id, amount, date)
 
             elif donation_choice == "3":
 
                 print("\n=== Delete Donation ===")
-                donation_id = int(input("Enter the Donation ID to delete: (It's the seq number of donation): "))
+                try:
+                    donation_id = int(input("Enter the Donation ID to delete: (It's the seq number of donation): ").strip())
+                except (ValueError, TypeError):
+                    print("Invalid input. Please enter a valid Donation ID (a number).")
                 if delete_donation(donation_id):
                     print(f"Donation {donation_id} deleted successfully.")
                 else:
                     print(f"Failed to delete donation {donation_id}.")
             elif donation_choice == "4":
-                alu_id = input("Enter the alumni ID to look up: ")            
+                try:
+                    alu_id = input("Enter the alumni ID to look up: ")
+                except Exception as e:
+                    print(f"An error occurred: {e}")
                 donations = get_donation(alu_id)
                 for donation in donations.values():
                     print(donation)
+            else :
+                print("Input is not valid. Please try again.")
+                continue
         elif sub_choice == "2":
             print("\n=== Alumni Account ===")
             print("1. Register")
@@ -1645,31 +1693,78 @@ def admin_operations():
             if alumni_choice == "1":
                 # 用戶輸入區域
                 print("\n======= Register Alumni Account ========")
-                username = input("Enter the Alumni ID to create: ")
-                password = input("Enter the password: ")
-                current_user = input("Enter the your username (must be an Admin): ")
+                try:
+                    # 使用者輸入
+                    username = input("Enter the Alumni ID to create: ")
+                    if not username:
+                        raise ValueError("Alumni ID cannot be empty.")
+
+                    password = input("Enter the password: ")
+                    if not password:
+                        raise ValueError("Password cannot be empty.")
+
+                    current_user = input("Enter your username (must be an Admin): ")
+                    if not current_user:
+                        raise ValueError("Your username cannot be empty.")
+
+                    print("Inputs received successfully!")
+                    
+                except ValueError as e:
+                    print(f"Input error: {e}")
+                except Exception as e:
+                    print(f"An unexpected error occurred: {e}")
 
                 # 呼叫 create_user 函式
                 user_id = create_user(username, password, "Alumni", current_user)
                 print(user_id)
                 if user_id:
                     # 用戶輸入區域
-                    first_name = input("Enter the alumni's first name: ")
-                    last_name = input("Enter the alumni's last name: ")
-                    sex = input("Enter the alumni's gender (M/F): ")
-                    address = input("Enter the alumni's address: ")
-                    graduation_year = int(input("Enter the alumni's graduation year: "))
-                    phone = input("Enter the alumni's phone number: ")
+                    try:
+                        # 使用者輸入
+                        first_name = input("Enter the alumni's first name: ").strip()
+                        if not first_name:
+                            raise ValueError("First name cannot be empty.")
+
+                        last_name = input("Enter the alumni's last name: ").strip()
+                        if not last_name:
+                            raise ValueError("Last name cannot be empty.")
+
+                        sex = input("Enter the alumni's gender (M/F): ").strip().upper()
+                        if sex not in ["M", "F"]:
+                            raise ValueError("Gender must be 'M' or 'F'.")
+
+                        address = input("Enter the alumni's address: ").strip()
+                        if not address:
+                            raise ValueError("Address cannot be empty.")
+
+                        graduation_year_input = input("Enter the alumni's graduation year: ").strip()
+                        if not graduation_year_input.isdigit():
+                            raise ValueError("Graduation year must be a number.")
+                        graduation_year = int(graduation_year_input)
+
+                        phone = input("Enter the alumni's phone number: ").strip()
+                        if not phone.isdigit():
+                            raise ValueError("Phone number must contain only digits.")
+
+                        print("All inputs received successfully!")
+
+                    except ValueError as e:
+                        print(f"Input error: {e}")
+                    except Exception as e:
+                        print(f"An unexpected error occurred: {e}")
 
                     # 呼叫 add_alumni 函式
                     add_alumni(username, first_name, last_name, sex, address, graduation_year, user_id, phone)
             elif alumni_choice == '2':
                 # 用戶輸入區域
                 print("\n======= Update Alumni Account ========")
-                user_id = input("Enter the Alumni ID to update: ")
-                password = input("Enter the new password (press Enter to skip): ")
-                role = input("Enter the new role (press Enter to skip): ")
-                admin_name = input("Enter the your username (must be an Admin): ")
+                try:
+                    user_id = input("Enter the Alumni ID to update: ")
+                    password = input("Enter the new password (press Enter to skip): ")
+                    role = input("Enter the new role (press Enter to skip): ")
+                    admin_name = input("Enter your username (must be an Admin): ")
+                except Exception as e:
+                    print(f"An error occurred: {e}")
 
                 if password == "":
                     password = None
@@ -1681,8 +1776,11 @@ def admin_operations():
             elif alumni_choice == "3":
                 # 用戶輸入區域
                 print("\n======= Delete Alumni Account ========")
-                user_id = input("Enter the Alumni ID to delete (usually your student ID): ")
-                username = input("Enter your username (must be an Admin): ")
+                try:
+                    user_id = input("Enter the Alumni ID to delete (usually your student ID): ")
+                    username = input("Enter your username (must be an Admin): ")
+                except Exception as e:
+                    print(f"An error occurred: {e}")
 
                 # 呼叫 delete_user 函式
                 delete_user(user_id, username)
@@ -1700,23 +1798,29 @@ def admin_operations():
             if achievement_choice == "1":
 
                 print("\n=== Insert Achievement ===")
-                alumni_id = input("Enter the Alumni ID: ")
-                title = input("Enter the achievement title: ")
-                description = input("Enter the achievement description: ")
-                date = input("Enter the achievement date (YYYY-MM-DD): ")
-                category = input("Enter the achievement category (e.g., Academic, Sports, etc.): ")
+                try:
+                    alumni_id = input("Enter the Alumni ID: ")
+                    title = input("Enter the achievement title: ")
+                    description = input("Enter the achievement description: ")
+                    date = input("Enter the achievement date (YYYY-MM-DD): ")
+                    category = input("Enter the achievement category (e.g., Academic, Sports, etc.): ")
+                except Exception as e:
+                    print(f"An error occurred: {e}")
 
                 add_achievement(alumni_id, title, description, date, category)
             elif achievement_choice == "2":
                 # 必須輸入的欄位
                 print("\n=== Edit Achievement ===")
-                alumnileader_id = input("Enter the alumnileader ID: ")
-                title = input("Enter the achievement title: ")
-                date = input("Enter the achievement date (YYYY-MM-DD): ")
+                try:
+                    alumnileader_id = input("Enter the alumnileader ID: ")
+                    title = input("Enter the achievement title: ")
+                    date = input("Enter the achievement date (YYYY-MM-DD): ")
 
-                # 可選輸入的欄位，若無輸入則設為 None
-                new_description = input("Enter the new description (or press Enter to skip): ")
-                new_category = input("Enter the new category (or press Enter to skip): ")
+                    # 可選輸入的欄位，若無輸入則設為 None
+                    new_description = input("Enter the new description (or press Enter to skip): ")
+                    new_category = input("Enter the new category (or press Enter to skip): ")
+                except Exception as e:
+                    print(f"An error occurred: {e}")
                 if new_description == "":
                     new_description = None
                 if new_category == "":
@@ -1726,12 +1830,17 @@ def admin_operations():
             elif achievement_choice == "3":
                 # User input section
                 print("\n=== Delete Achievement ===")
-                alumnileader_id = input("Enter the alumnileader_id associated with the achievement: ")
-                title = input("Enter the title of the achievement to delete: ")
-                date = input("Enter the date of the achievement to delete: ")
-
+                try:
+                    alumnileader_id = input("Enter the alumnileader_id associated with the achievement: ")
+                    title = input("Enter the title of the achievement to delete: ")
+                    date = input("Enter the date of the achievement to delete: ")
+                except Exception as e:
+                    print(f"An error occurred: {e}")
                 # Call the delete function
                 delete_achievement(title, date, alumnileader_id)
+            else :
+                print("Input is not valid. Please try again.")
+                continue
 
 def main():
     """
