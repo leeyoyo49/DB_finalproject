@@ -51,7 +51,7 @@ python .\client.py
 -  根據不同的身分有不同的帳號密碼以及使用介面：
     - 一般使用者：Alumni:
         - 帳號：B11705048
-        - 密碼：123
+        - 密碼：!vh6TvGy@c
       ![client_Alumni_login](SCREENSHOT/client_alumni_login.png)  
     - 業務經營者：Alumni with Alumni Association
         - 帳號：B11705022
