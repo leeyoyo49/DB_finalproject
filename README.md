@@ -62,7 +62,6 @@ python .\client.py
         - 密碼：admin
       ![client_Admin_login](SCREENSHOT/client_admin_login.png)
 
-
 ## Appendix
 ### 各角色擁有的權限
 ### 一般使用者 (alumni)
