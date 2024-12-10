@@ -208,7 +208,7 @@ def add_job(alumni_id):
         if response.status_code == 200:
             print("Career history added successfully.")
         else:
-            print(f"Failed to add career history: {response.json()['message']}")
+            print(f"Failed to add career history.")
     except requests.exceptions.RequestException as e:
         print(f"Error during request: {e}")
 
@@ -769,8 +769,8 @@ def alumni_operations():
 
         elif choice == "2":
             print("\n=== Career ===")
-            print("1. View Career")
-            print("2. Edit Career")
+            print("1. View Career History")
+            print("2. Add Career History")
             sub_choice = input("Enter your choice: ")
 
             if sub_choice == "1":
@@ -797,8 +797,8 @@ def alumni_operations():
 
             elif sub_choice == "2":
                 print("\n=== Edit Career ===")
-                # 這裡可以實現編輯事業資料功能
-                print("Edit Career functionality is under construction.")
+                add_job(ALUMNI_ID)
+                #print("Edit Career functionality is under construction.")
 
         elif choice == "3":
             print("\n=== Your Past Achievements ===")
