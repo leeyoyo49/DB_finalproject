@@ -8,7 +8,6 @@
 ## Introduction
 
 University Alumni Tracking System 是一個用於記錄與管理校友信息的系統，旨在促進學校與校友之間的聯繫。該系統支持多角色操作，包括 Alumni、Admin、校友會幹部及資料分析師，功能涵蓋校友資料維護、職業歷程更新、捐款管理、活動參與紀錄及數據分析。此系統幫助學校分析校友成就與支持情況，促進校友資源的整合與應用。
-## Content
 
 ## Table of Contents
 - [Authors](#Authors)
