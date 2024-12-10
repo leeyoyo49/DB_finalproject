@@ -55,10 +55,11 @@ python .\client.py
     - 業務經營者：Alumni with Alumni Association
         - 帳號：B11705022
         - 密碼：123
-      ![client_Alumni_Association_login](SCREENSHOT/client_alumni_Association_login.png)
+      ![client_Alumni_Association_login](SCREENSHOT/client_alumni_association_login.png)
     - 網站經營者：Admin
-        - 帳號：
-        - 密碼：
+        - 帳號：Admin
+        - 密碼：admin
+      ![client_Admin_login](SCREENSHOT/client_admin_login.png)
 
 
 # 各角色擁有的權限
