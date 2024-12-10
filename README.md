@@ -29,6 +29,8 @@ University Alumni Tracking System 是一個用於記錄與管理校友訊息的�
 ```bash
   pip install <python library>
 ```
+## 報告
+報告簡報在 `report_slide.pdf`
     
 ## Setting
 - 使用備份檔 dbfinal 復原資料庫
